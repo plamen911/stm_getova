@@ -463,12 +463,13 @@ function validate(form) {
 				total += parseFloat(this.value);
 			}
 		});
+		total = total.toFixed(2);
 		if(!total) {
 			alert("Моля, въведете поне една вноска по общо дължимата сума по договор ("+$("input#amount_due_total").val()+" лв.).");
 			form.amount_due.focus();
 			return false;
 		}
-		if(total != $("input#amount_due_total").val()) {
+		if(parseFloat(total) != parseFloat($("input#amount_due_total").val())) {
 			alert("Сумата от вноските ("+total+" лв.) се различава от общо дължимата сума по договор ("+$("input#amount_due_total").val()+" лв.)!");
 			form.amount_due.focus();
 			return false;

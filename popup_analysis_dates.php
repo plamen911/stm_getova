@@ -56,15 +56,15 @@ function openAnalysis($aFormValues)
     }
 
     if ($avgWorkers <= 30) {
-        $objResponse->script("window.location='w_analiz_below30.php?firm_id=$firm_id&date_from=" .
+        $objResponse->script("window.location='w_rtf_analiz_below30.php?firm_id=$firm_id&date_from=" .
             trim($aFormValues['date_from']) . "&date_to=" . trim($aFormValues['date_to']) .
             "';");
     } elseif ($avgWorkers > 31 && $avgWorkers <= 100) {
-        $objResponse->script("window.location='w_analiz_31-100.php?firm_id=$firm_id&date_from=" .
+        $objResponse->script("window.location='w_rtf_analiz_31-100.php?firm_id=$firm_id&date_from=" .
             trim($aFormValues['date_from']) . "&date_to=" . trim($aFormValues['date_to']) .
             "';");
     } else {
-        $objResponse->script("window.location='w_analiz_above100.php?firm_id=$firm_id&date_from=" .
+        $objResponse->script("window.location='w_rtf_analiz_above100.php?firm_id=$firm_id&date_from=" .
             trim($aFormValues['date_from']) . "&date_to=" . trim($aFormValues['date_to']) .
             "';");
     }

@@ -1,8 +1,9 @@
 <?php
-// To test: http://localhost/stm2008/hipokrat/w_analiz_above100.php?firm_id=227&date_from=01.01.2010&date_to=31.12.2010&offline=1
+// To test: http://localhost/stm2008/stm_getova/w_analiz_above100.php?firm_id=228&date_from=01.01.2012&date_to=31.12.2012&offline=1
 require('includes.php');
 require('class.stmstats.php');
 set_time_limit(120);
+ini_set('memory_limit', '512M');
 
 $offline = (isset($_GET['offline']) && $_GET['offline'] == '1') ? 1 : 0;
 
@@ -15,7 +16,7 @@ $s = $dbInst->getStmInfo();
 
 $stm_name = preg_replace('/\<br\s*\/?\>/', '', $s['stm_name']);
 
-$dbInst->makeAllMkbUpperCase();
+//$dbInst->makeAllMkbUpperCase();
 
 if(!isset($_GET['date_from']) || trim($_GET['date_from']) == '') {
 	$y = date('Y') - 1;
