@@ -75,15 +75,6 @@ $avg_workers = $objStats->avg_workers;
 $avg_men = $objStats->avg_men;
 $avg_women = $objStats->avg_women;
 $sick_anual_workers = $objStats->sick_anual_workers;
-if(isset($f['firm_name'])) {
-	// hack asked by Asya from Viamed, Sofia
-	if(false !== strpos($stm_name, 'ВИАМЕД')) {
-		$avg_men = round($avg_men, 0);
-		$avg_women = round($avg_women, 0);
-		$avg_workers = $avg_men + $avg_women;
-		$sick_anual_workers = round($objStats->sick_anual_workers);
-	}
-}
 
 $data = array();
 $data[] = array('Средно-списъчен състав на работещите', 'М', 'Ж');
@@ -262,6 +253,28 @@ if(!empty($data)) {
 }
 
 $sect->writeText('10. Честота на работещите с трудови злополуки: '.str_replace('<b style=\'mso-bidi-font-weight:normal\'>', '<b>', $objStats->freqWorkersLabourAccidents()).'.', $times12, $alignLeft);
+
+$data = array();
+$table = $objStats->getWorkersLabourAccidentsTable();
+if(!empty($table)) {
+	$data = fnExtractTableData($table);
+}
+$no_data = (!empty($data)) ? ':' : ': <b>Няма предоставени данни</b>.';
+$sect->writeText('Описание на трудовите злополуки (по данни от първични болнични листове) за '.$dbInst->extractYear($date_from, $date_to).' година – брой и причини'.$no_data, $times12, $alignLeft);
+if(!empty($data)) {
+	$colWidts = array(1, 3, 10);
+	$colAligns = array('center', 'center', 'center');
+	fnGenerateTable($data, $colWidts, $colAligns, $tableType = 'plain');
+}
+
+$data = $objStats->getWorkersLabourAccidents();
+$no_data = (!empty($data)) ? ':' : ': <b>Няма предоставени данни</b>.';
+$sect->writeText('Трудови злополуки (по данни от първични болнични листове) по професии - брой и честота'.$no_data, $times12, $alignLeft);
+if(!empty($data)) {
+	$colWidts = array(13, 2, 2);
+	$colAligns = array('left', 'center', 'center');
+	fnGenerateTable($data, $colWidts, $colAligns, $tableType = 'plain');
+}
 
 $sect->writeText('11. Честота на работещите със заболяемост с трайна неработоспособност: '.str_replace('<b style=\'mso-bidi-font-weight:normal\'>', '<b>', $objStats->freqWorkersWithTelk()).'.', $times12, $alignLeft);
 

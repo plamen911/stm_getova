@@ -171,10 +171,15 @@ if(isset($_POST['btnSubmit'])) {
 	if(empty($amount_due7)) { $due_date7 = ''; }
 	$amount_due8 = floatval($_POST['amount_due8']);
 	if(empty($amount_due8)) { $due_date8 = ''; }
-	if($amount_contract > 0 && !($amount_due + $amount_due2 + $amount_due3 + $amount_due4 + $amount_due5 + $amount_due6 + $amount_due7 + $amount_due8)) {
+	
+	$amt_paid_total = $amount_due + $amount_due2 + $amount_due3 + $amount_due4 + $amount_due5 + $amount_due6 + $amount_due7 + $amount_due8;
+	$amt_paid_total = floatval(sprintf('%.2f', $amount_due_total));
+	$amount_due_total = floatval(sprintf('%.2f', $amount_due_total));
+	
+	if($amount_contract > 0 && !($amt_paid_total)) {
 		$errmsg[] = 'Моля, въведете поне една вноска по общо дължимата сума по договор ('.$amount_due_total.' лв.).';
-	} elseif($amount_due_total != ($amount_due + $amount_due2 + $amount_due3 + $amount_due4 + $amount_due5 + $amount_due6 + $amount_due7 + $amount_due8)) {
-		$errmsg[] = 'Сумата от вноските ('.($amount_due + $amount_due2 + $amount_due3 + $amount_due4 + $amount_due5 + $amount_due6 + $amount_due7 + $amount_due8).' лв.) се различава от общо дължимата сума по договор ('.$amount_due_total.' лв.)!';
+	} elseif($amount_due_total != $amt_paid_total) {
+		$errmsg[] = 'Сумата от вноските ('.$amt_paid_total.' лв.) се различава от общо дължимата сума по договор ('.$amount_due_total.' лв.)!';
 	}
 
 	$paid_date = trim($_POST['paid_date']);

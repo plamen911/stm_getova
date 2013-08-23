@@ -55,8 +55,6 @@ xmlns="http://www.w3.org/TR/REC-html40">
 <meta name=ProgId content=Word.Document>
 <meta name=Generator content="Microsoft Word 11">
 <meta name=Originator content="Microsoft Word 11">
-<!--<link rel=File-List href="worker_card3_files/filelist.xml">
-<link rel=Edit-Time-Data href="worker_card3_files/editdata.mso">-->
 <!--[if !mso]>
 <style>
 v\:* {behavior:url(#default#VML);}
@@ -220,7 +218,7 @@ table.a0
 	mso-fareast-language:#0400;
 	mso-bidi-language:#0400;}
 </style>
-<![endif]--><!--<link rel=File-List href="analiz_below30_02_files/filelist.xml">--><!--[if gte mso 9]><xml>
+<![endif]--><!--[if gte mso 9]><xml>
  <o:shapedefaults v:ext="edit" spidmax="9218"/>
 </xml><![endif]--><!--[if gte mso 9]><xml>
  <o:shapelayout v:ext="edit">

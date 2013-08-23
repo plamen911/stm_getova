@@ -67,7 +67,6 @@ xmlns="http://www.w3.org/TR/REC-html40">
 <meta name=ProgId content=Word.Document>
 <meta name=Generator content="Microsoft Word 11">
 <meta name=Originator content="Microsoft Word 11">
-<!--<link rel=File-List href="worker_card_blank2_files/filelist.xml">-->
 <title><?=((isset($stm_name))?HTMLFormat($stm_name):'СЛУЖБА ПО ТРУДОВА МЕДИЦИНА')?></title>
 <!--[if gte mso 9]><xml>
  <o:DocumentProperties>
@@ -363,7 +362,7 @@ table.a0
 	mso-fareast-language:#0400;
 	mso-bidi-language:#0400;}
 </style>
-<![endif]--><!--<link rel=File-List href="analiz_below30_02_files/filelist.xml">--><!--[if gte mso 9]><xml>
+<![endif]--><!--[if gte mso 9]><xml>
  <o:shapedefaults v:ext="edit" spidmax="7170"/>
 </xml><![endif]--><!--[if gte mso 9]><xml>
  <o:shapelayout v:ext="edit">
