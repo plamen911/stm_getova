@@ -227,7 +227,7 @@ include("header.php");
               <td align="left"><?=$row['location_name']?></td>
               <td align="left"><?=$row['address']?></td>
               <td align="center"><strong><?=$num_workers?></strong></td>
-              <td align="center"><?=(($num_workers)?'<a href="w_workers_list.php?firm_id='.$row['firm_id'].'&amp;'.SESS_NAME.'='.session_id().'" title="Списък на работещите в '.HTMLFormat($row['name']).'"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Списък" /></a>':'--')?></td>
+              <td align="center"><?=(($num_workers)?'<a href="w_rtf_workers_list.php?firm_id='.$row['firm_id'].'&amp;'.SESS_NAME.'='.session_id().'" title="Списък на работещите в '.HTMLFormat($row['name']).'"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Списък" /></a>':'--')?></td>
               <td align="center"><?=(($num_workers)?'<a id="lnkanalysis_'.$row['firm_id'].'" href="popup_analysis_dates.php?firm_id='.$row['firm_id'].'&amp;'.SESS_NAME.'='.session_id().'" title="Анализ здр. състояние на \''.HTMLFormat($row['name']).'\'"><img src="img/books_016.gif" width="16" height="16" border="0" alt="Анализ" /></a>':'--')?></td>
               <td align="center"><a href="firm_info.php?firm_id=<?=$row['firm_id']?>" title="Отвори/Редактирай <?=HTMLFormat($row['name'])?>"><img src="img/edititem.gif" alt="Отвори/Редактирай <?=HTMLFormat($row['name'])?>" width="16" height="16" border="0" /></a></td>
               <?php if($_SESSION['sess_user_level'] == 1) { /* admin rights only */ ?>

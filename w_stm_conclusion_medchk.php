@@ -1,5 +1,5 @@
 <?php
-// Test: http://localhost/stm2008/hipokrat/w_stm_conclusion_medchk.php?checkup_id=412&offline=1
+// Test: http://localhost/stm2008/stm_getova/w_stm_conclusion_medchk.php?checkup_id=412&offline=1
 
 require('includes.php');
 

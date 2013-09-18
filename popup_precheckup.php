@@ -372,6 +372,7 @@ function echoDiagnosis($precheckup_id=0) {
 }
 function echoCheckups($worker_id=0) {
 	global $f;
+	global $precheckup_id;
 	ob_start();
 	?>
                 <table class="xlstable" cellpadding="0" cellspacing="0">
@@ -386,7 +387,7 @@ function echoCheckups($worker_id=0) {
                           <td><textarea id="prchk_data" name="prchk_data" cols="60" rows="4"><?=((isset($f['prchk_data']))?HTMLFormat($f['prchk_data']):'')?></textarea></td>
                         </tr>
                         <tr>
-                          <td valign="top"><p id="printConclusion" style="display:<?=((isset($f['prchk_conclusion']) && $f['prchk_conclusion'] != '')?'block':'none')?>;"><a href="w_stm_conclusion_prchk.php?worker_id=<?=$worker_id?>&amp;<?=SESS_NAME.'='.session_id()?>" title="Отвори с MSWord"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Заключение" /> Заключение на СТМ:</a></p><p id="noPrintConclusion" style="display:<?=((isset($f['prchk_conclusion']) && $f['prchk_conclusion'] != '')?'none':'block')?>;">Заключение на СТМ:</p></td>
+                          <td valign="top"><p id="printConclusion" style="display:<?=((isset($f['prchk_conclusion']) && $f['prchk_conclusion'] != '')?'block':'none')?>;"><a href="w_rtf_stm_conclusion_prchk.php?precheckup_id=<?=$precheckup_id?>&amp;<?=SESS_NAME.'='.session_id()?>" title="Отвори с MSWord"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Заключение" /> Заключение на СТМ:</a></p><p id="noPrintConclusion" style="display:<?=((isset($f['prchk_conclusion']) && $f['prchk_conclusion'] != '')?'none':'block')?>;">Заключение на СТМ:</p></td>
                           <td>Лицето
                               <select id="prchk_conclusion" name="prchk_conclusion">
                                 <option value=""> &nbsp;&nbsp;</option>

@@ -736,7 +736,7 @@ function echoConclusionSTM($checkup_id=0) {
 	?>
                 <table class="xlstable" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td align="left" valign="top"><p id="printConclusion" style="display:<?=((isset($f['stm_conclusion']) && $f['stm_conclusion'] != '')?'block':'none')?>;"><a href="w_stm_conclusion_medchk.php?checkup_id=<?=$checkup_id?>&amp;<?=SESS_NAME.'='.session_id()?>" title="Отвори с MSWord"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Заключение" /> Заключение на СТМ:</a></p><p id="noPrintConclusion" style="display:<?=((isset($f['stm_conclusion']) && $f['stm_conclusion'] != '')?'none':'block')?>;">Заключение на СТМ:</p></td>
+                    <td align="left" valign="top"><p id="printConclusion" style="display:<?=((isset($f['stm_conclusion']) && $f['stm_conclusion'] != '')?'block':'none')?>;"><a href="w_rtf_stm_conclusion_medchk.php?checkup_id=<?=$checkup_id?>&amp;<?=SESS_NAME.'='.session_id()?>" title="Отвори с MSWord"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Заключение" /> Заключение на СТМ:</a></p><p id="noPrintConclusion" style="display:<?=((isset($f['stm_conclusion']) && $f['stm_conclusion'] != '')?'none':'block')?>;">Заключение на СТМ:</p></td>
                     <td align="left">Лицето
                     <select id="stm_conclusion" name="stm_conclusion">
                       <option value=""> &nbsp;&nbsp;</option>
@@ -950,7 +950,7 @@ function downloadCard() {
 		alert('Моля, изберете медицински преглед.')
 		return false;
 	}
-	window.location = 'w_worker_card.php?checkup_id='+$("#checkup_id").val();
+	window.location = 'w_rtf_worker_card.php?checkup_id='+$("#checkup_id").val();
 }
 //]]>
 </script>

@@ -1044,7 +1044,7 @@ $(document).ready(function(){
 $(document).ready(function() {
 	stripTable('listtable');
 	$("#lnkWList").click(function(){
-		window.location = 'w_workers_list.php?firm_id=<?=$firm_id?>&subdivision_id=' + $("#subdivision_id").val() + '&<?=SESS_NAME.'='.session_id()?>';
+		window.location = 'w_rtf_workers_list.php?firm_id=<?=$firm_id?>&subdivision_id=' + $("#subdivision_id").val() + '&<?=SESS_NAME.'='.session_id()?>';
 		return false;
 	});
 	$("#lnkMCheckupList").click(function(){
