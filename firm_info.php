@@ -734,6 +734,9 @@ function echoWorkers($firm_id)
                 <td><a id="lnkMCheckupList" href="#" title="Списък на работещите, преминали профилактичен преглед"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Списък" /> Списък на преминалите профилакт. преглед </a> от <input type="text" id="date_from" name="date_from" value="" size="18" maxlength="10" onchange="xajax_formatBGDate('date_from',this.value);return false;" /> г. до <input type="text" id="date_to" name="date_to" value="<?=date("d.m.Y", time())?>" size="18" maxlength="10" onchange="xajax_formatBGDate('date_to',this.value);return false;" /> г. </td>
               </tr>
               <tr>
+                <td><a id="lnkAnalysisProphylactic" href="#" title="Анализ на профилактичните прегледи"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Списък" /> Анализ на профилактичните прегледи </a> от <input type="text" id="date_from4" name="date_from4" value="" size="18" maxlength="10" onchange="xajax_formatBGDate('date_from4',this.value);return false;" onclick="scwShow(this,event);" class="date_input" /> г. до <input type="text" id="date_to4" name="date_to4" value="<?=date("d.m.Y", time())?>" size="18" maxlength="10" onchange="xajax_formatBGDate('date_to4',this.value);return false;" onclick="scwShow(this,event);" class="date_input" /> г. </td>
+              </tr>
+              <tr>
                 <td><a id="lnkZVN" href="#" title="Справка ЗВН"><img src="img/medical3.gif" width="16" height="16" border="0" alt="Списък" /> Справка ЗВН за периода</a> от <input type="text" id="date_from2" name="date_from2" value="" size="18" maxlength="10" onchange="xajax_formatBGDate('date_from2',this.value);return false;" /> г. до <input type="text" id="date_to2" name="date_to2" value="<?=date("d.m.Y", time())?>" size="18" maxlength="10" onchange="xajax_formatBGDate('date_to2',this.value);return false;" /> г.</td>
               </tr>
               <tr>
@@ -1049,6 +1052,10 @@ $(document).ready(function() {
 	});
 	$("#lnkMCheckupList").click(function(){
 		window.location = 'w_workers_checkups_list.php?firm_id=<?=$firm_id?>&date_from=' + $("#date_from").val() + '&date_to=' + $("#date_to").val() + '&<?=SESS_NAME.'='.session_id()?>';
+		return false;
+	});
+	$("#lnkAnalysisProphylactic").click(function(){
+		window.location = 'w_rtf_analysis_prophylactic.php?firm_id=<?=$firm_id?>&date_from=' + $("#date_from4").val() + '&date_to=' + $("#date_to4").val() + '&<?=SESS_NAME.'='.session_id()?>';
 		return false;
 	});
 	$("#lnkZVN").click(function(){

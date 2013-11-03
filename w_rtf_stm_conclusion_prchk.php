@@ -49,13 +49,20 @@ $filename = 'Zaklyuchenie_predv_pregled_'.$cyrlat->cyr2lat($worker_name.'_'.$fir
 
 require('phprtflite/rtfbegin.php');
 
+$sect->addEmptyParagraph();
+$sect->addEmptyParagraph();
 $sect->writeText('<b>З А К Л Ю Ч Е Н И Е</b>', $times20, $alignCenter);
 $sect->addEmptyParagraph();
+$sect->addEmptyParagraph();
 $sect->writeText('<b>от '.mb_strtoupper(html_entity_decode($dbInst->shortStmName($stm_name)), 'utf-8').'</b>', $times14, $alignCenter);
+$sect->addEmptyParagraph();
 $sect->writeText('<b>за пригодността на лицето '.((isset($f)) ? mb_strtoupper($f['fname'].' '.$f['sname'].' '.$f['lname'], 'utf-8') : '').'</b>', $times14, $alignCenter);
+$sect->addEmptyParagraph();
 $sect->writeText('<b>да изпълнява длъжността '.((isset($w)) ? mb_strtoupper($w['i.position_name'], 'utf-8') : '').'</b>', $times14, $alignCenter);
+$sect->addEmptyParagraph();
 $sect->writeText('<b>в '.((isset($line)) ? mb_strtoupper($line['firm_name'], 'utf-8'):'').((isset($line)) ? ' - '.$line['location_name'] : '').'</b>', $times14, $alignCenter);
 
+$sect->addEmptyParagraph();
 $sect->addEmptyParagraph();
 $sect->addEmptyParagraph();
 
@@ -110,6 +117,8 @@ if(isset($f['prchk_conclusion']) && '0' == $f['prchk_conclusion']) {
 }
 $sect->addEmptyParagraph();
 $sect->addEmptyParagraph();
+$sect->addEmptyParagraph();
 
 $timesFooter = $times14;
+$date = $f['prchk_stm_date2'];
 require('phprtflite/rtfend.php');

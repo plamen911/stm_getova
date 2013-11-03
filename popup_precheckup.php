@@ -168,6 +168,9 @@ function processPrchkCheckup($aFormValues, $tab='checkups') {
 	$objResponse->assign('sp_cards', 'innerHTML', precheckupPulldown($worker_id, $precheckup_id));
 
 	if($isNewPreCheckup) {
+	
+		$objResponse->script("$('#printConclusion a').attr('href', 'w_rtf_stm_conclusion_prchk.php?precheckup_id=$precheckup_id')");
+	
 		$sql = "SELECT COUNT(*) AS `cnt` FROM `medical_precheckups` WHERE `worker_id` = $worker_id";
 		$row = $dbInst->fnSelectSingleRow($sql);
 		if(!empty($row)) {
@@ -370,9 +373,8 @@ function echoDiagnosis($precheckup_id=0) {
 	ob_end_clean();
 	return $buff;
 }
-function echoCheckups($worker_id=0) {
+function echoCheckups($worker_id=0, $precheckup_id=0) {
 	global $f;
-	global $precheckup_id;
 	ob_start();
 	?>
                 <table class="xlstable" cellpadding="0" cellspacing="0">
@@ -673,7 +675,7 @@ body,html {
 
           	case 'checkups':
           	default:
-          		echo echoCheckups($worker_id);
+          		echo echoCheckups($worker_id, $precheckup_id);
           		break;
           }
           ?></div></td>
