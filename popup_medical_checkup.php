@@ -995,7 +995,7 @@ body, html {
           	$_data = array();
           }
           for ($i = 0; $i < 3; $i++) {
-          	echo '<input type="text" name="hospital[]" value="'.((is_array($_data)&&isset($_data[$i]))?HTMLFormat($_data[$i]):'').'" size="35" maxlength="50"'.$readonly.' />';
+          	echo '<input type="text" name="hospital[]" value="'.((is_array($_data)&&isset($_data[$i]))?HTMLFormat($_data[$i]):'').'" size="100"'.$readonly.(($i) ? ' style="display:none;"' : '').' />';
           }
           ?>
         </td>
