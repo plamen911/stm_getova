@@ -266,36 +266,36 @@ function echoInfo($row, $firm_id)
           </tr>
           <tr>
             <td class="leftSplit"><strong>Наименование: </strong></td>
-            <td class="rightSplit"><input type="text" id="name" name="name" value="<?=HTMLFormat($row['name'])?>" size="40" maxlength="50" tabindex="1" /></td>
+            <td class="rightSplit"><input type="text" id="name" name="name" value="<?=HTMLFormat($row['name'])?>" size="40" tabindex="1" /></td>
             <td>Тел. 1:</td>
-            <td class="rightSplit"><input type="text" id="phone1" name="phone1" value="<?=HTMLFormat($row['phone1'])?>" size="40" maxlength="50" tabindex="7" /></td>
+            <td class="rightSplit"><input type="text" id="phone1" name="phone1" value="<?=HTMLFormat($row['phone1'])?>" size="40" tabindex="7" /></td>
           </tr>
           <tr>
             <td class="leftSplit">Населено място:</td>
-            <td class="rightSplit"><input type="text" id="location_name" name="location_name" value="<?=HTMLFormat($row['location_name'])?>" size="40" maxlength="50" tabindex="2" onchange="xajax_guessLocation(this.value);return false;" />
+            <td class="rightSplit"><input type="text" id="location_name" name="location_name" value="<?=HTMLFormat($row['location_name'])?>" size="40" tabindex="2" onchange="xajax_guessLocation(this.value);return false;" />
               <input type="hidden" id="location_id" name="location_id" value="<?=(($row['location_id']=='')?'0':$row['location_id'])?>" /></td>
             <td>Тел. 2:</td>
-            <td class="rightSplit"><input type="text" id="phone2" name="phone2" value="<?=HTMLFormat($row['phone2'])?>" size="40" maxlength="50" tabindex="8" /></td>
+            <td class="rightSplit"><input type="text" id="phone2" name="phone2" value="<?=HTMLFormat($row['phone2'])?>" size="40" tabindex="8" /></td>
           </tr>
           <tr>
             <td class="leftSplit">Община:</td>
-            <td class="rightSplit"><input type="text" id="community_name" name="community_name" value="<?=HTMLFormat($row['community_name'])?>" size="40" maxlength="50" tabindex="3" onchange="xajax_guessCommunity(this.value);return false;" />
+            <td class="rightSplit"><input type="text" id="community_name" name="community_name" value="<?=HTMLFormat($row['community_name'])?>" size="40" tabindex="3" onchange="xajax_guessCommunity(this.value);return false;" />
               <input type="hidden" id="community_id" name="community_id" value="<?=(($row['community_id']=='')?'0':$row['community_id'])?>" /></td>
             <td>Факс:</td>
-            <td class="rightSplit"><input type="text" id="fax" name="fax" value="<?=HTMLFormat($row['fax'])?>" size="40" maxlength="50" tabindex="9" /></td>
+            <td class="rightSplit"><input type="text" id="fax" name="fax" value="<?=HTMLFormat($row['fax'])?>" size="40" tabindex="9" /></td>
           </tr>
           <tr>
             <td class="leftSplit">Област:</td>
-            <td class="rightSplit"><input type="text" id="province_name" name="province_name" value="<?=HTMLFormat($row['province_name'])?>" size="40" maxlength="50" tabindex="4" onchange="xajax_guessProvince(this.value);return false;" />
+            <td class="rightSplit"><input type="text" id="province_name" name="province_name" value="<?=HTMLFormat($row['province_name'])?>" size="40" tabindex="4" onchange="xajax_guessProvince(this.value);return false;" />
               <input type="hidden" id="province_id" name="province_id" value="<?=(($row['province_id']=='')?'0':$row['province_id'])?>" /></td>
             <td>E-mail:</td>
-            <td class="rightSplit"><input type="text" id="email" name="email" value="<?=HTMLFormat($row['email'])?>" size="40" maxlength="50" tabindex="10" /></td>
+            <td class="rightSplit"><input type="text" id="email" name="email" value="<?=HTMLFormat($row['email'])?>" size="40" tabindex="10" /></td>
           </tr>
           <tr>
             <td class="leftSplit">Адрес:</td>
-            <td class="rightSplit"><input type="text" id="address" name="address" value="<?=HTMLFormat($row['address'])?>" size="40" maxlength="50" tabindex="5" /></td>
+            <td class="rightSplit"><input type="text" id="address" name="address" value="<?=HTMLFormat($row['address'])?>" size="40" tabindex="5" /></td>
             <td>Договор рег. №: </td>
-            <td class="rightSplit"><input type="text" id="contract_num" name="contract_num" value="<?=HTMLFormat($row['contract_num'])?>" size="40" maxlength="50" /></td>
+            <td class="rightSplit"><input type="text" id="contract_num" name="contract_num" value="<?=HTMLFormat($row['contract_num'])?>" size="40" /></td>
           </tr>
           <tr>
             <td rowspan="2" class="leftSplit">Бележки:</td>
@@ -395,7 +395,7 @@ function echoStructForm($firm_id)
                   <?php
                   }
                   ?>
-                  <input type="text" id="wplace_name_0" name="wplace_name_0" value="" size="40" maxlength="50" class="newItem" />
+                  <input type="text" id="wplace_name_0" name="wplace_name_0" value="" size="40" class="newItem" />
                   <div class="br"></div>
                   Условия на труд:<div class="br"></div>
                   <textarea id="wplace_workcond_0" name="wplace_workcond_0" cols="42" rows="2" class="newItem"></textarea></td>
