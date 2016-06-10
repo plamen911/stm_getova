@@ -1,5 +1,6 @@
 <?php
 // http://localhost/stm2008/hipokrat/w_health_status.php?firm_id=174&offline=1
+set_time_limit(600);
 require('includes.php');
 
 $offline = (isset($_GET['offline']) && $_GET['offline'] == '1') ? 1 : 0;
@@ -46,7 +47,7 @@ $sql = "SELECT w.*, strftime('%d.%m.%Y', w.birth_date, 'localtime') AS birth_dat
 		AND w.date_retired = ''
 		GROUP BY w.worker_id
 		ORDER BY w.date_retired, w.fname, w.sname, w.lname, w.egn, w.worker_id";
-$rows = $dbInst->query($sql);
+$rows = $dbInst->query($sql, PDO::FETCH_ASSOC);
 
 $chkY = date('Y');
 $chkY_0 = $chkY - 1;
@@ -58,7 +59,7 @@ function getMedicalCheckups($worker_id, $chkY) {
 	global $dbInst;
 	$out = '';
 	$sql = "SELECT *, strftime('%d.%m.%Y', `checkup_date`, 'localtime') AS `checkup_date2` FROM `medical_checkups` WHERE `checkup_date` >= '$chkY-01-01 00:00:00' AND `checkup_date` <= '$chkY-12-31 23:59:59' AND `worker_id` = $worker_id";
-	$fields = $dbInst->query($sql);
+	$fields = $dbInst->query($sql, PDO::FETCH_ASSOC);
 	if(!empty($fields)) {
 		foreach ($fields as $field) {
 			if(!empty($field['checkup_date2'])) { $out .= '<p class=MsoNormal><span style=\'font-size:10.0pt\'>'.$field['checkup_date2'].'</span></p>'; }
@@ -415,7 +416,7 @@ normal'><span style='font-size:14.0pt'>на работещите в <?=((isset($
   echo (!empty($row['prchk_surgeon'])) ? '<p class=MsoNormal><span style=\'font-size:10.0pt\'>Хир.: '.HTMLFormat($row['prchk_surgeon']).'<o:p></o:p></span></p>' : '';
   // Check for older precheckups
   $sql = "SELECT strftime('%d.%m.%Y', `prchk_date`, 'localtime') AS `prchk_date2` FROM `medical_precheckups` WHERE `worker_id` = $row[worker_id] ORDER BY `prchk_date` DESC, `precheckup_id` DESC LIMIT 1, -1";
-  $lines = $dbInst->query($sql);
+  $lines = $dbInst->query($sql, PDO::FETCH_ASSOC);
   if(!empty($lines)) {
   	$ary = array();
   	foreach ($lines as $line) {
@@ -433,7 +434,7 @@ normal'><span style='font-size:14.0pt'>на работещите в <?=((isset($
 							strftime('%d.%m.%Y', checkup_date, 'localtime') AS checkup_date_h
 							FROM medical_checkups
 							WHERE worker_id = '$row[worker_id]'
-							ORDER BY checkup_date DESC, checkup_id DESC");
+							ORDER BY checkup_date DESC, checkup_id DESC", PDO::FETCH_ASSOC);
   if(!empty($flds)) {
   	foreach ($flds as $f) {
   		$ary = array();
@@ -458,7 +459,7 @@ normal'><span style='font-size:14.0pt'>на работещите в <?=((isset($
   none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
   mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
   mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'><?php
-  $fields = $dbInst->query("SELECT * FROM `patient_charts` WHERE `worker_id` = $row[worker_id] ORDER BY `hospital_date_from`, `days_off`");
+  $fields = $dbInst->query("SELECT * FROM `patient_charts` WHERE `worker_id` = $row[worker_id] ORDER BY `hospital_date_from`, `days_off`", PDO::FETCH_ASSOC);
   if(!empty($fields)) {
   	$j = 1;
   	foreach ($fields as $field) {
@@ -487,7 +488,7 @@ normal'><span style='font-size:14.0pt'>на работещите в <?=((isset($
   mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
   mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'><?php
   $sql = "SELECT * FROM `telks` WHERE `worker_id` = $row[worker_id] ORDER BY `telk_date_from`, `telk_duration`";
-  $fields = $dbInst->query($sql);
+  $fields = $dbInst->query($sql, PDO::FETCH_ASSOC);
   if(!empty($fields)) {
   	$j = 1;
   	foreach ($fields as $field) {
