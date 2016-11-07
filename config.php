@@ -32,7 +32,7 @@ if(preg_match('/^acc_/i', basename($_SERVER['PHP_SELF']))) {
 	define('SESS_NAME', 'BGSTM');
 }
 if (!defined('PHP_EOL')) define ('PHP_EOL', strtoupper(substr(PHP_OS,0,3) == 'WIN') ? "\r\n" : "\n");
-define('CREATE_FIRM_FOLDERS', 1);
+define('CREATE_FIRM_FOLDERS', 0);
 define('SHOW_ACCOUNTING_APP', 1);
 
 
