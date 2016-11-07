@@ -48,7 +48,7 @@ function getDuePaymentsTable($due_from=0, $due_to=0, $label='') {
 
 	ob_start(); // Turn output buffering on.
 
-	$rows = getDuePayments($due_from, $due_to, &$totalAmountDue);
+	$rows = getDuePayments($due_from, $due_to, $totalAmountDue);
 	
 	echo '<div class="divider1">&nbsp;</div>';
 	
@@ -116,7 +116,7 @@ include("acc_header.php");
       </tr>
     </table>
 
-	<?php	  
+	<?php
 	echo getDuePaymentsTable( date('Y-m-d H:i:s', $today), 0, 'Просрочени плащания на договори' );
 	echo getDuePaymentsTable( date('Y-m-d H:i:s', $today), date('Y-m-d H:i:s', ($today + $oneDayInSeconds * 7)), 'Плащания до 1 седмица' );
 	echo getDuePaymentsTable( date('Y-m-d H:i:s', ($today + $oneDayInSeconds * 7)), date('Y-m-d H:i:s', ($today + $oneDayInSeconds * 14)), 'Плащания до 2 седмици' );

@@ -611,7 +611,7 @@ function getServicesPulldownOptions() {
 }
 
 // Accounting functions
-function getDuePayments($due_from=0, $due_to=0, $totalAmountDue) {
+function getDuePayments($due_from=0, $due_to=0, &$totalAmountDue) {
 	global $dbInst;
 
 	$sql = "SELECT c.*, f.`name` AS `firm_name`, f.`address` AS `firm_address`, l.location_name, cc.community_name, p.province_name
