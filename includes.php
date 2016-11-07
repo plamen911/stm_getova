@@ -1,9 +1,14 @@
 <?php
-
 require ("config.php");
 require ("functions.php");
 require ("sqlitedb.php");
 require ("convertroman.php");
+
+// Switch to HTTPS
+if (!isset($_SERVER['HTTPS']) || 'on' !== strtolower($_SERVER['HTTPS'])) {
+    header('Location: ' . SECURE_URL . basename($_SERVER['PHP_SELF']) . ((!empty($_SERVER['QUERY_STRING'])) ? '?' . $_SERVER['QUERY_STRING'] : ''));
+    exit();
+}
 
 if(in_array(basename($_SERVER['PHP_SELF']), array('login.php', 'acc_login.php'))) {
 	ini_set('memory_limit', '64M');

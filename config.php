@@ -3,10 +3,12 @@ ini_set("memory_limit","200M");
 header("Content-type: text/html;charset=UTF-8");
 
 if(isset($_SERVER['SERVER_ADMIN']) && 'plamen@lynxlake.org' == $_SERVER['SERVER_ADMIN']) {
+    define('SECURE_URL', 'https://localhost/stm2008/hipokrat/');
 	error_reporting(E_ALL);
 } else {
-	error_reporting(0);
-	//error_reporting(E_ALL);
+    define('SECURE_URL', 'https://hipokrat.net/');
+	//error_reporting(0);
+	error_reporting(E_ALL);
 }
 
 if(strpos($_SERVER["SERVER_SOFTWARE"], 'Abyss') !== false) {

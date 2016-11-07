@@ -11,7 +11,6 @@ $echoJS = '';
 
 $GLOBALS['totalAmountDue'] = 0;
 
-
 $echoJS = <<<EOT
 <!-- http://jonathanleighton.com/projects/date-input -->
 <script type="text/javascript" src="js/date_input/jquery.date_input.js"></script>

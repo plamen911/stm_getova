@@ -41,7 +41,7 @@ $objStats = new StmStats($firm_id, $date_from, $date_to);
 
 $unchecked = 'unchecked.gif';
 $checked = 'checked.gif';
-$imgpath = "http://" . ((isset($_SERVER['HTTP_HOST'])?$_SERVER['HTTP_HOST']:$_SERVER['SERVER_ADDR'].':'.$_SERVER['SERVER_PORT'])) . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . "/img/";
+$imgpath = "https://" . ((isset($_SERVER['HTTP_HOST'])?$_SERVER['HTTP_HOST']:$_SERVER['SERVER_ADDR'].':'.$_SERVER['SERVER_PORT'])) . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . "/img/";
 
 if(!$offline) {
 	$firm_name = str_replace(' ', '_', $f['firm_name']);
