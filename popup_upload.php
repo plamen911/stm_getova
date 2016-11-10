@@ -7,36 +7,42 @@ if (!$firmInfo) {
     die('Липсва индентификатор на фирмата!');
 }
 
+$currentUrl = $_SERVER['PHP_SELF'] . '?firm_id=' . $firm_id;
+
 //$uploadDir = __DIR__ . '/docs/' . $firm_id . '/';
 $uploadDir = 'docs/' . $firm_id . '/';
 make_uploaddir($uploadDir);
 
 if (!empty($_GET['delete']) && file_exists($uploadDir . $_GET['delete'])) {
     @unlink($uploadDir . $_GET['delete']);
-    header('Location: ' . $_SERVER['PHP_SELF'] . '?firm_id=' . $firm_id);
+    header('Location: ' . $currentUrl);
     exit();
 }
 
 if ($_FILES['upfile'] && count($_FILES['upfile']['name'])) {
     for ($i = 0; $i < count($_FILES['upfile']['name']); $i++) {
         if (UPLOAD_ERR_OK === $_FILES['upfile']['error'][$i]) {
-            $fname = $_FILES['upfile']['name'][$i];
+            $fname = basename($_FILES['upfile']['name'][$i]);
             $ftmp_name = $_FILES['upfile']['tmp_name'][$i];
 
-            $uploadFile = preg_replace('/[^A-Za-zА-Яа-я0-9\-_\.]/', '', str_replace('-', '_', $fname));
+            $uploadFile = str_replace(' ', '_', str_replace('-', '_', $fname));
+            $uploadFile = preg_replace('/[^A-Za-zА-Яа-я0-9\-_\.]/', '', $uploadFile);
             $uploadFile = preg_replace('/(\..{2,4})$/', '_' . date('Y-m-d-H-i-s') . '$1', $uploadFile);
 
             if (!move_uploaded_file($ftmp_name, $uploadDir . $uploadFile)) {
                 setFlash('Възникна неочакван проблем при добавяне на файл ' . $fname . '.');
-                header('Location: ' . $_SERVER['PHP_SELF'] . '?firm_id=' . $firm_id);
+                header('Location: ' . $currentUrl);
                 exit();
             }
+        } elseif (in_array($_FILES['upfile']['error'][$i], array(UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE))) {
+            setFlash('Exceeded filesize limit.');
+            header('Location: ' . $currentUrl);
+            exit();
         }
     }
-    header('Location: ' . $_SERVER['PHP_SELF'] . '?firm_id=' . $firm_id);
+    header('Location: ' . $currentUrl);
     exit();
 }
-
 
 ?><!DOCTYPE html>
 <html lang="bg">
@@ -68,11 +74,12 @@ if ($_FILES['upfile'] && count($_FILES['upfile']['name'])) {
     <div class="panel panel-default">
         <!--<div class="panel-heading">Качване на файл</div>-->
         <div class="panel-body">
-            <form action="<?php echo $_SERVER['PHP_SELF']; ?>?firm_id=<?php echo $firm_id; ?>" method="post"
+            <form action="<?php echo $currentUrl; ?>" method="post"
                   enctype="multipart/form-data" class="form-inline">
                 <div class="form-group">
                     <label for="upfile" class=" class=" form-control"">Избери файл</label>
                     <input type="file" id="upfile" name="upfile[]" multiple required>
+                    <small id="upfileHelp" class="form-text text-muted">Максимален размер на файловете: <?php echo (int)(ini_get('post_max_size')); ?>MB</small>
                 </div>
                 <input type="submit" value="Качи" class="btn btn-primary" onclick="this.value='Моля, изчакайте...';">
             </form>
