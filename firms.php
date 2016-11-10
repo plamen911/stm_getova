@@ -116,6 +116,20 @@ $(document).ready(function(){
 		var win_title = $(this).attr('title');
 		$(this).colorbox({width:"80%", height:"80%", iframe:true, overlayClose:false, title:win_title, transition:"none", fastIframe:false });
 	});
+    $('.popup').bind('click', function (e) {
+        e.preventDefault();
+        var self = $(this);
+        var href = self.attr('href');
+        var title = self.attr('title');
+        $.colorbox({
+            href: href,
+            title: title,
+            iframe: true,
+            overlayClose: false,
+            width: '80%',
+            height: '100%'
+        });
+    });
 });
 //]]>
 </script>
@@ -234,7 +248,7 @@ include("header.php");
               <td align="center"><a href="javascript:void(null);" onclick="var answ=confirm('Наистина ли искате да изтриете всички данни за фирмата?');if(answ){xajax_deleteFirm(<?=$row['firm_id']?>);}return false;" title="Изтрий <?=HTMLFormat($row['name'])?>"><img src="img/delete.gif" alt="Изтрий <?=HTMLFormat($row['name'])?>" width="15" height="15" border="0" /></a></td>
               <?php } ?>
               <td align="center"><?php
-              if(isset($_SERVER['HTTP_USER_AGENT']) 
+              /*if(isset($_SERVER['HTTP_USER_AGENT'])
 				&& ( preg_match('/(MSIE)\b(.*?);/i', $_SERVER['HTTP_USER_AGENT'], $matches) 
 					|| preg_match('/\b(WOW64;).*?\brv\:([0-9\.]+)/i', $_SERVER['HTTP_USER_AGENT'], $matches)
 				)
@@ -243,8 +257,8 @@ include("header.php");
               	echo '<a href="'.$net_path.'\\'.$firm_folder.'"'.(((7 > $version))?' target="_blank"':'').'><img src="img/folder.gif" width="16" height="16" border="0" alt="'.HTMLFormat($firm_folder).'" /></a>';
               } else {
               	echo 'Не';
-              }
-              ?></td>
+              }*/
+              ?><a href="popup_upload.php?firm_id=<?php echo $row['firm_id']; ?>" title="Качване на файлове на фирма <?php echo HTMLFormat($row['name']); ?>" class="popup"><img src="img/folder.gif" width="16" height="16" border="0" alt="" /></a></td>
             </tr>
             <?php
             	}
