@@ -19,7 +19,7 @@ if (!empty($_GET['delete']) && file_exists($uploadDir . $_GET['delete'])) {
     exit();
 }
 
-if ($_FILES['upfile'] && count($_FILES['upfile']['name'])) {
+if (!empty($_FILES['upfile']) && count($_FILES['upfile']['name'])) {
     for ($i = 0; $i < count($_FILES['upfile']['name']); $i++) {
         if (UPLOAD_ERR_OK === $_FILES['upfile']['error'][$i]) {
             $fname = basename($_FILES['upfile']['name'][$i]);

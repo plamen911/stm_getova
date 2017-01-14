@@ -8,7 +8,7 @@ if(isset($_SERVER['SERVER_ADMIN']) && 'plamen@lynxlake.org' == $_SERVER['SERVER_
 } else {
     define('SECURE_URL', 'https://hipokrat.net/');
 	//error_reporting(0);
-	error_reporting(E_ALL);
+    error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 }
 
 if(strpos($_SERVER["SERVER_SOFTWARE"], 'Abyss') !== false) {

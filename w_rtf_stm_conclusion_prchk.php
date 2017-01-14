@@ -8,7 +8,11 @@ $worker_id = $firm_id = 0;
 $sql = "SELECT p.*, p.`firm_id` AS `firm_id`,
 		strftime('%d.%m.%Y', p.prchk_date, 'localtime') AS prchk_date2,
 		strftime('%d.%m.%Y', p.prchk_stm_date, 'localtime') AS prchk_stm_date2,
-		w.`fname`, w.`sname`, w.`lname`, w.`sex`, w.`egn`,
+		w.`fname` AS `w.fname`, w.`fname` AS `fname`, 
+		w.`sname` AS `w.sname`, w.`sname` AS `sname`, 
+		w.`lname` AS `w.lname`, w.`lname` AS `lname`, 
+		w.`sex` AS `w.sex`, w.`sex` AS `sex`,
+		w.`egn` AS `w.egn`, w.`egn` AS `egn`, 
 		f.`name` AS `firm_name`
 		FROM `medical_precheckups` p
 		LEFT JOIN `workers` w ON (w.`worker_id` = p.`worker_id`)

@@ -2,3 +2,7 @@
 .idea
 db/
 phpinfo.php
+error_log
+firm_info_test.php
+firms_test.php
+rentalapp/

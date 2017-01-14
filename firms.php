@@ -69,13 +69,14 @@ LEFT JOIN provinces p ON (p.province_id = f.province_id)"; */
 $txtCondition = '';
 $is_active = (isset($_GET['is_active']) && in_array($_GET['is_active'], array('1', '0', ''))) ? $_GET['is_active'] : '1';
 
-$query = "  SELECT f.*, l.location_name, c.community_name, p.province_name
+$query = "  SELECT f.*, l.location_name, c.community_name, p.province_name, v.cnt AS cnt
             FROM firms f
+            LEFT JOIN v_worker_cnt v ON (v.firm_id = f.firm_id)
             LEFT JOIN locations l ON (l.location_id = f.location_id)
             LEFT JOIN communities c ON (c.community_id = f.community_id)
             LEFT JOIN provinces p ON (p.province_id = f.province_id)";
 if('' == $is_active) { /*$txtCondition = "WHERE 1";*/ }
-else { $txtCondition .= "WHERE is_active = '$is_active'"; }
+else { $txtCondition .= "WHERE f.is_active = '$is_active'"; }
 
 if(isset($_GET['btnFind'])) {	// Filter properties
 	if(isset($_GET['keyword']) && trim($_GET['keyword']) != '') {
@@ -84,7 +85,7 @@ if(isset($_GET['btnFind'])) {	// Filter properties
 		$txtCondition .= "(f.name LIKE '%$keyword%' OR f.name LIKE '%".$dbInst->my_mb_ucfirst($keyword)."%' OR f.name LIKE '%".mb_strtoupper($keyword,'utf-8')."%' OR f.address LIKE '%$keyword%' OR f.address LIKE '%".$dbInst->my_mb_ucfirst($keyword)."%' OR f.address LIKE '%".mb_strtoupper($keyword,'utf-8')."%')";
 	}
 }	// Search end
-$sortArr = array('name','location_name','address','num_workers');
+$sortArr = array('name', 'location_name', 'address', 'num_workers', 'cnt');
 if (isset($_GET["sort_by"]) && in_array($_GET["sort_by"],$sortArr)) {
 	$order = (isset($_GET['order']) && $_GET['order']=='ASC') ? 'ASC' : 'DESC';
 	$txtCondition .= " ORDER BY f.`is_active` DESC, `$_GET[sort_by]` $order, LOWER(name), l.location_name, c.community_name, p.province_name, f.firm_id";
@@ -187,7 +188,8 @@ include("header.php");
               <a href="<?=basename($_SERVER['PHP_SELF']).cleanQueryString('sort_by=address&order='.((isset($_GET["sort_by"])&&$_GET["sort_by"]=="address")?(($_GET["order"]=="DESC")?"ASC":"DESC"):"ASC"))?>" title="Сортиране по адрес">Адрес</a></th>
               <!--<th><?php if (isset($_GET["sort_by"])&&$_GET["sort_by"]=="num_workers"){?><img src="img/<?php if (isset($_GET["order"])&&$_GET["order"]=="DESC"){ ?>sort_arrow_down.gif<?php } else { ?>sort_arrow_up.gif<?php } ?>" alt="Sort" width="16" height="16" border="0" /><?php } ?>
               <a href="<?=basename($_SERVER['PHP_SELF']).cleanQueryString('sort_by=num_workers&order='.((isset($_GET["sort_by"])&&$_GET["sort_by"]=="num_workers")?(($_GET["order"]=="DESC")?"ASC":"DESC"):"ASC"))?>" title="Сортиране по брой работещи">Бр. работещи</a></th> -->
-              <th>Бр. работещи</th>
+              <th><?php if (isset($_GET["sort_by"])&&$_GET["sort_by"]=="cnt"){?><img src="img/<?php if (isset($_GET["order"])&&$_GET["order"]=="DESC"){ ?>sort_arrow_down.gif<?php } else { ?>sort_arrow_up.gif<?php } ?>" alt="Sort" width="16" height="16" border="0" /><?php } ?>
+                  <a href="<?=basename($_SERVER['PHP_SELF']).cleanQueryString('sort_by=cnt&order='.((isset($_GET["sort_by"])&&$_GET["sort_by"]=="cnt")?(($_GET["order"]=="DESC")?"ASC":"DESC"):"ASC"))?>" title="Бр. работещи">Бр. работещи</a></th>
               <th>Списък <br />работещи</th>
               <th>Анализ здр. <br />състояние</th>
               <th>Отвори /  <br />Редактирай</th>
@@ -198,41 +200,8 @@ include("header.php");
             </tr>
             <?php
             if(is_array($firms) && count($firms) > 0) {
-            	$i = 0;
-            	$IDs = array();
             	foreach ($firms as $row) {
-            		$IDs[] = $row['firm_id'];
-            	}
-            	$sql = "SELECT COUNT(*) AS cnt, firm_id
-            			FROM workers 
-            			WHERE firm_id IN (".implode(',', $IDs).") 
-            			AND date_retired = '' 
-            			AND is_active = '1'
-            			GROUP BY firm_id";
-            	$rows = $dbInst->query($sql);
-            	$cntWorkers = array();
-            	foreach ($rows as $row) {
-            		$cntWorkers[$row['firm_id']] = $row['cnt'];
-            	}
-            	foreach ($firms as $row) {
-            		//$field = $dbInst->fnSelectSingleRow("SELECT COUNT(*) AS cnt FROM workers w WHERE w.firm_id=$row[firm_id] AND w.date_retired='' AND w.is_active='1'");
-            		//$num_workers = $field['cnt'];
-            		$num_workers = (isset($cntWorkers[$row['firm_id']])) ? $cntWorkers[$row['firm_id']] : 0;
-            		$firm_folder = $row['firm_folder'];
-            		if(empty($firm_folder) && 1 == CREATE_FIRM_FOLDERS) {
-            			$firm_folder = $dbInst->getGenericFirmName($row['name']);
-            			// Make sure that firm folder is unique
-            			$j = 1;
-            			while (1) {
-            				if(file_exists($abs_path.$firm_folder)) {
-            					$firm_folder .= $j;
-            				} else break;
-            				$j++;
-            			}
-            			if(@mkdir($abs_path.$firm_folder)) {
-            				$dbInst->query("UPDATE firms SET firm_folder = '".$dbInst->checkStr($firm_folder)."' WHERE firm_id = $row[firm_id]");
-            			}
-            		}
+            		$num_workers = (int)$row['cnt'];
             ?>
             <tr>
               <td align="left"><a href="firm_info.php?firm_id=<?=$row['firm_id']?>" title="Отвори/Редактирай <?=HTMLFormat($row['name'])?>">
@@ -247,18 +216,7 @@ include("header.php");
               <?php if($_SESSION['sess_user_level'] == 1) { /* admin rights only */ ?>
               <td align="center"><a href="javascript:void(null);" onclick="var answ=confirm('Наистина ли искате да изтриете всички данни за фирмата?');if(answ){xajax_deleteFirm(<?=$row['firm_id']?>);}return false;" title="Изтрий <?=HTMLFormat($row['name'])?>"><img src="img/delete.gif" alt="Изтрий <?=HTMLFormat($row['name'])?>" width="15" height="15" border="0" /></a></td>
               <?php } ?>
-              <td align="center"><?php
-              /*if(isset($_SERVER['HTTP_USER_AGENT'])
-				&& ( preg_match('/(MSIE)\b(.*?);/i', $_SERVER['HTTP_USER_AGENT'], $matches) 
-					|| preg_match('/\b(WOW64;).*?\brv\:([0-9\.]+)/i', $_SERVER['HTTP_USER_AGENT'], $matches)
-				)
-				&& 1 == CREATE_FIRM_FOLDERS) {
-              	$version = floatval(trim($matches[2]));
-              	echo '<a href="'.$net_path.'\\'.$firm_folder.'"'.(((7 > $version))?' target="_blank"':'').'><img src="img/folder.gif" width="16" height="16" border="0" alt="'.HTMLFormat($firm_folder).'" /></a>';
-              } else {
-              	echo 'Не';
-              }*/
-              ?><a href="popup_upload.php?firm_id=<?php echo $row['firm_id']; ?>" title="Качване на файлове на фирма <?php echo HTMLFormat($row['name']); ?>" class="popup"><img src="img/folder.gif" width="16" height="16" border="0" alt="" /></a></td>
+              <td align="center"><a href="popup_upload.php?firm_id=<?php echo $row['firm_id']; ?>" title="Качване на файлове на фирма <?php echo HTMLFormat($row['name']); ?>" class="popup"><img src="img/folder.gif" width="16" height="16" border="0" alt="" /></a></td>
             </tr>
             <?php
             	}

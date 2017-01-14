@@ -614,7 +614,10 @@ function getServicesPulldownOptions() {
 function getDuePayments($due_from=0, $due_to=0, &$totalAmountDue) {
 	global $dbInst;
 
-	$sql = "SELECT c.*, f.`name` AS `firm_name`, f.`address` AS `firm_address`, l.location_name, cc.community_name, p.province_name
+	$sql = "SELECT c.*, f.`name` AS `firm_name`, f.`address` AS `firm_address`, 
+			l.location_name AS `l.location_name`, l.location_name AS `location_name`, 
+			cc.community_name AS `cc.community_name`, cc.community_name AS `community_name`, 
+			p.province_name AS `p.province_name`, p.province_name AS `province_name`
 			FROM `acc_contracts` c
 			LEFT JOIN firms f ON (f.`firm_id` = c.`firm_id`)
 			LEFT JOIN locations l ON (l.location_id = f.location_id)
@@ -926,7 +929,10 @@ function getPaidAmounts($due_from=0, $due_to=0) {
 
 	$totalAmountPaid = 0;
 
-	$query = "	SELECT c.*, f.`name` AS `firm_name`, f.`address` AS `firm_address`, l.location_name, cc.community_name, p.province_name
+	$query = "	SELECT c.*, f.`name` AS `firm_name`, f.`address` AS `firm_address`, 
+				l.location_name AS `l.location_name`, l.location_name AS `location_name`, 
+				cc.community_name AS `cc.community_name`, cc.community_name AS `community_name`, 
+				p.province_name AS `p.province_name`, p.province_name AS `province_name`
 				FROM `acc_contracts` c
 				LEFT JOIN firms f ON (f.`firm_id` = c.`firm_id`)
 				LEFT JOIN locations l ON (l.location_id = f.location_id)

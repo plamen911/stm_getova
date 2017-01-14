@@ -424,6 +424,7 @@ function echoWorkerData($worker_id, $firmInfo) {
                   <optgroup label="<?=HTMLFormat($firmInfo['name'].' - '.$firmInfo['location_name'])?>"></optgroup>
                   <?php
                   $rows = $dbInst->getMap($firm_id);
+				  $out = '';
                   if($rows) {
                   	$subdivision_id = -1;
                   	$wplace_id = -1;

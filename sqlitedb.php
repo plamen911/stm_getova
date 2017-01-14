@@ -150,8 +150,9 @@ class SqliteDB
 	public function getWorkPlacesInSubdivision($subdivision_id, $firm_id)
 	{
 		$db = $this->getDBHandle();
-		$query = "	SELECT m.map_id, m.subdivision_id,
-					s.subdivision_name
+		$query = "	SELECT m.map_id AS `m.map_id`, m.map_id AS `map_id`, 
+	                m.subdivision_id AS `m.subdivision_id`, m.subdivision_id AS `subdivision_id`, 
+					s.subdivision_name AS `s.subdivision_name`, s.subdivision_name AS `subdivision_name`
 					FROM firm_struct_map m
 					LEFT JOIN subdivisions s ON (s.subdivision_id = m.subdivision_id)
 					WHERE m.subdivision_id = " . intval($subdivision_id) . "
@@ -282,7 +283,8 @@ class SqliteDB
      * @param  $checkup_id - checkup_id value
      */
 	public function getDoctorsDesc($checkup_id = 0) {
-		$sql = sprintf("SELECT c.* , d.doctor_pos_name
+		$sql = sprintf("SELECT c.* , 
+                        d.doctor_pos_name AS `d.doctor_pos_name`, d.doctor_pos_name AS `doctor_pos_name`
 						FROM medical_checkups_doctors c
 						LEFT JOIN cfg_doctor_positions d ON (d.doctor_pos_id = c.doctor_pos_id)
 						WHERE c.checkup_id = %d
@@ -298,9 +300,9 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$query = "	SELECT m.*,
-					s.subdivision_name,
-					w.wplace_name,
-					p.position_name
+					s.subdivision_name AS `s.subdivision_name`, s.subdivision_name AS `subdivision_name`, 
+					w.wplace_name AS `w.wplace_name`, w.wplace_name AS `wplace_name`, 
+					p.position_name AS `p.position_name`, p.position_name AS `position_name`
 					FROM firm_struct_map m
 					LEFT JOIN subdivisions s ON (s.subdivision_id = m.subdivision_id)
 					LEFT JOIN work_places w ON (w.wplace_id = m.wplace_id)
@@ -332,9 +334,9 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$query = "	SELECT m.*,
-					s.subdivision_name,
-					w.wplace_name,
-					p.position_name
+					s.subdivision_name AS `s.subdivision_name`, s.subdivision_name AS `subdivision_name`, 
+					w.wplace_name AS `w.wplace_name`, w.wplace_name AS `wplace_name`, 
+					p.position_name AS `p.position_name`, p.position_name AS `position_name`
 					FROM firm_struct_map m
 					LEFT JOIN subdivisions s ON (s.subdivision_id = m.subdivision_id)
 					LEFT JOIN work_places w ON (w.wplace_id = m.wplace_id)
@@ -373,10 +375,10 @@ class SqliteDB
 					strftime('%d.%m.%Y', w.date_retired, 'localtime') AS date_retired2,
 					strftime('%d.%m.%Y', c.stm_date, 'localtime') AS stm_date2,
 					f.name AS firm_name,
-					l.location_name,
-					s.subdivision_name,
-					p.wplace_name,
-					t.position_name
+					l.location_name AS `l.location_name`, l.location_name AS `location_name`, 
+					s.subdivision_name AS `s.subdivision_name`, s.subdivision_name AS `subdivision_name`, 
+					p.wplace_name AS `p.wplace_name`, p.wplace_name AS `wplace_name`, 
+					t.position_name AS `t.position_name`, t.position_name AS `position_name`
 					FROM medical_checkups c
 					LEFT JOIN firms f ON (f.firm_id = c.firm_id)
 					LEFT JOIN locations l ON (l.location_id = f.location_id)
@@ -594,7 +596,8 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$query = "	SELECT w.*,
-					m.mkb_desc, m.mkb_code
+					m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`, 
+					m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`
 					FROM family_weights w
 					LEFT JOIN mkb m ON (m.mkb_id = w.mkb_id)
 					WHERE w.checkup_id = '" . intval($checkup_id) . "'
@@ -623,7 +626,8 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$query = "	SELECT a.*,
-					m.mkb_desc, m.mkb_code
+					m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`, 
+					m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`
 					FROM anamnesis a
 					LEFT JOIN mkb m ON (m.mkb_id = a.mkb_id)
 					WHERE a.checkup_id = '" . intval($checkup_id) . "'
@@ -677,7 +681,8 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$query = "	SELECT d.*,
-					m.mkb_desc, m.mkb_code
+					m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`, 
+					m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`
 					FROM family_diseases d
 					LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
 					WHERE d.checkup_id = '" . intval($checkup_id) . "'
@@ -706,8 +711,9 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$query = sprintf("	SELECT d.*,
-							m.mkb_desc, m.mkb_code,
-							p.doctor_pos_name
+							m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`, 
+					        m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`,
+							p.doctor_pos_name AS `p.doctor_pos_name`, p.doctor_pos_name AS `doctor_pos_name`
 							FROM prchk_diagnosis d
 							LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
 							LEFT JOIN cfg_doctor_positions p ON (p.doctor_pos_id = d.published_by)
@@ -737,7 +743,11 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$query = "	SELECT c.*,
-					i.indicator_type, i.indicator_name, i.pdk_max, i.pdk_min, i.indicator_dimension
+					i.indicator_type AS `i.indicator_type`, i.indicator_type AS `indicator_type`,  
+					i.indicator_name AS `i.indicator_name`, i.indicator_name AS `indicator_name`, 
+					i.pdk_max AS `i.pdk_max`, i.pdk_max AS `pdk_max`, 
+					i.pdk_min AS `i.pdk_min`, i.pdk_min AS `pdk_min`, 
+					i.indicator_dimension AS `i.indicator_dimension`, i.indicator_dimension AS `indicator_dimension`
 					FROM lab_checkups c
 					LEFT JOIN lab_indicators i ON (i.indicator_id = c.indicator_id)
 					WHERE c.checkup_id = '" . intval($checkup_id) . "'
@@ -787,7 +797,10 @@ class SqliteDB
 	public function getFirms()
 	{
 		$db = $this->getDBHandle();
-		$query = "	SELECT f.*, l.location_name, c.community_name, p.province_name
+		$query = "	SELECT f.*, 
+	                l.location_name AS `l.location_name`, l.location_name AS `location_name`,  
+	                c.community_name AS `c.community_name`, c.community_name AS `community_name`,  
+	                p.province_name AS `p.province_name`, p.province_name AS `province_name`
 					FROM firms f
 					LEFT JOIN locations l ON (l.location_id = f.location_id)
 					LEFT JOIN communities c ON (c.community_id = f.community_id)
@@ -822,7 +835,9 @@ class SqliteDB
 					strftime('%d.%m.%Y', t.telk_date_from, 'localtime') AS telk_date_from2,
 					strftime('%d.%m.%Y', t.telk_date_to, 'localtime') AS telk_date_to2,
 					strftime('%d.%m.%Y', t.first_inv_date, 'localtime') AS first_inv_date2,
-					m.mkb_id, m.mkb_desc, m.mkb_code
+					m.mkb_id AS `m.mkb_id`, m.mkb_id AS `mkb_id`,
+					m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`,  
+					m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`
 					FROM telks t
 					LEFT JOIN mkb m ON (m.mkb_id = t.mkb_id_$mkb_num)
 					WHERE t.worker_id = " . intval($worker_id) . "
@@ -856,7 +871,9 @@ class SqliteDB
 					strftime('%d.%m.%Y', t.telk_date_from, 'localtime') AS telk_date_from_h,
 					strftime('%d.%m.%Y', t.telk_date_to, 'localtime') AS telk_date_to_h,
 					strftime('%d.%m.%Y', t.first_inv_date, 'localtime') AS first_inv_date_h,
-					m.mkb_id, m.mkb_desc, m.mkb_code
+					m.mkb_id AS `m.mkb_id`, m.mkb_id AS `mkb_id`,
+					m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`,  
+					m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`
 					FROM telks t
 					LEFT JOIN mkb m ON (m.mkb_id = t.mkb_id_1)
 					WHERE t.worker_id = '" . intval($worker_id) . "' ";
@@ -899,7 +916,10 @@ class SqliteDB
 		$query = "	SELECT c.*,
 					strftime('%d.%m.%Y', hospital_date_from, 'localtime') AS hospital_date_from,
 					strftime('%d.%m.%Y', hospital_date_to, 'localtime') AS hospital_date_to,
-					m.mkb_desc, m.mkb_code, r.reason_desc
+					m.mkb_id AS `m.mkb_id`, m.mkb_id AS `mkb_id`,
+					m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`,  
+					m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`,
+					r.reason_desc AS `r.reason_desc`, r.reason_desc AS `reason_desc`
 					FROM patient_charts c
 					LEFT JOIN mkb m ON (m.mkb_id = c.mkb_id)
 					LEFT JOIN medical_reasons r ON (r.reason_id = c.reason_id)
@@ -1228,11 +1248,12 @@ class SqliteDB
 	{
 		$db = $this->getDBHandle();
 		$firm_id = intval($firm_id);
-		$query = "	SELECT w.worker_id, w.sex,
+		$query = "	SELECT w.worker_id AS `w.worker_id`, w.worker_id AS `worker_id`, 
+	                w.sex AS `w.sex`, w.sex AS `sex`,
 					(SELECT (strftime('%Y', '$date_to', 'localtime') - strftime('%Y', birth_date, 'localtime')))
 					AS age,
-					i.position_name,
-					c.mkb_id
+					i.position_name AS `i.position_name`, i.position_name AS `position_name`,
+					c.mkb_id AS `c.mkb_id`, c.mkb_id AS `mkb_id`
 					FROM patient_charts c
 					LEFT JOIN workers w ON (w.worker_id = c.worker_id)
 					LEFT JOIN firm_struct_map m ON (m.map_id = w.map_id)
@@ -1450,15 +1471,19 @@ class SqliteDB
 					strftime('%d.%m.%Y', w.prchk_date, 'localtime') AS prchk_date2,
 					strftime('%d.%m.%Y', w.prchk_stm_date, 'localtime') AS prchk_stm_date2,
 					f.name AS firm_name,
-					r.province_name,
-					c.community_name,
-					l.location_name,
-					l.location_type,
-					s.subdivision_id, s.subdivision_name,
-					p.wplace_id, p.wplace_name, p.wplace_workcond,
-					i.position_id, i.position_name,
-					i.position_workcond,
-					d.doctor_name,
+					r.province_name AS `r.province_name`, r.province_name AS `province_name`, 
+					c.community_name AS `c.community_name`, c.community_name AS `community_name`, 
+					l.location_name AS `l.location_name`, l.location_name AS `location_name`, 
+					l.location_type AS `l.location_type`, l.location_type AS `location_type`, 
+					s.subdivision_id AS `s.subdivision_id`, s.subdivision_id AS `subdivision_id`,  
+					s.subdivision_name AS `s.subdivision_name`, s.subdivision_name AS `subdivision_name`, 
+					p.wplace_id AS `p.wplace_id`, p.wplace_id AS `wplace_id`,  
+					p.wplace_name AS `p.wplace_name`, p.wplace_name AS `wplace_name`,  
+					p.wplace_workcond AS `p.wplace_workcond`, p.wplace_workcond AS `wplace_workcond`, 
+					i.position_id AS `i.position_id`, i.position_id AS `position_id`,  
+					i.position_name AS `i.position_name`, i.position_name AS `position_name`, 
+					i.position_workcond AS `i.position_workcond`, i.position_workcond AS `position_workcond`, 
+					d.doctor_name AS `d.doctor_name`, d.doctor_name AS `doctor_name`, 
 					d.address AS doctor_address,
 					d.phone1 AS doctor_phone,
 					d.phone2 AS doctor_phone2

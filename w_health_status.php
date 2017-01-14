@@ -38,7 +38,7 @@ if(!$offline) {
 
 $sql = "SELECT w.*, strftime('%d.%m.%Y', w.birth_date, 'localtime') AS birth_date2,
 		strftime('%d.%m.%Y', w.date_curr_position_start, 'localtime') AS date_curr_position_start2,
-		p.wplace_name
+		p.wplace_name AS `p.wplace_name`, p.wplace_name AS `wplace_name`
 		FROM `workers` w
 		LEFT JOIN firm_struct_map m ON (m.map_id = w.map_id)
 		LEFT JOIN work_places p ON (p.wplace_id = m.wplace_id)
