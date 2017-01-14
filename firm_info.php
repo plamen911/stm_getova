@@ -514,14 +514,18 @@ function echoWorkers($firm_id)
 				l.location_name,
 				s.subdivision_name,
 				p.wplace_name,
-				i.position_name
+				i.position_name,
+				vp.cnt AS precheckups_num,
+				vt.cnt AS patient_telks_num
 				FROM workers w
 				LEFT JOIN firms f ON (f.firm_id = w.firm_id)
 				LEFT JOIN locations l ON (l.location_id = w.location_id)
 				LEFT JOIN firm_struct_map m ON (m.map_id = w.map_id )
 				LEFT JOIN subdivisions s ON (s.subdivision_id = m.subdivision_id)
 				LEFT JOIN work_places p ON (p.wplace_id = m.wplace_id)
-				LEFT JOIN firm_positions i ON (i.position_id = m.position_id)";
+				LEFT JOIN firm_positions i ON (i.position_id = m.position_id)
+				LEFT JOIN v_precheckup_cnt vp ON (vp.worker_id = w.worker_id)
+				LEFT JOIN v_telk_cnt vt ON (vt.worker_id = w.worker_id)";
 	$txtCondition = " WHERE w.firm_id = $firm_id AND w.is_active = '1'";
 
 	if (isset($_GET['btnFind'])) { // Filter workers
@@ -539,7 +543,7 @@ function echoWorkers($firm_id)
 		$txtCondition .= "(w.date_retired = '')";
 	}
 	// Search end
-	$sortArr = array('fname', 'lname', 'egn', 'subdivision_name', 'position_name', 'subdiv_pos_wplace', 'subdiv_wplace_pos');
+	$sortArr = array('fname', 'lname', 'egn', 'subdivision_name', 'position_name', 'subdiv_pos_wplace', 'subdiv_wplace_pos', 'precheckups_num', 'patient_telks_num');
 	if (isset($_GET["sort_by"]) && in_array($_GET["sort_by"], $sortArr)) {
 		$order = (isset($_GET['order']) && $_GET['order'] == 'ASC') ? 'ASC' : 'DESC';
 		$sort_by = $_GET['sort_by'];
@@ -613,10 +617,10 @@ function echoWorkers($firm_id)
                 <th><?php if (isset($_GET["sort_by"]) && $_GET["sort_by"] == "lname") { ?><img src="img/<?php if (isset($_GET["order"]) && $_GET["order"] == "DESC") { ?>sort_arrow_down.gif<?php } else { ?>sort_arrow_up.gif<?php } ?>" alt="Sort" width="16" height="16" border="0" /><?php } ?><a href="<?= basename($_SERVER['PHP_SELF']) . cleanQueryString('sort_by=lname&order=' . ((isset($_GET["sort_by"]) && $_GET["sort_by"] == "lname") ? (($_GET["order"] == "DESC") ? "ASC" : "DESC") : "ASC")) ?>" title="Сортиране по фамилия">Фамилия</a></th>
                 <th><?php if (isset($_GET["sort_by"]) && $_GET["sort_by"] == "egn") { ?><img src="img/<?php if (isset($_GET["order"]) && $_GET["order"] == "DESC") { ?>sort_arrow_down.gif<?php } else { ?>sort_arrow_up.gif<?php } ?>" alt="Sort" width="16" height="16" border="0" /><?php } ?><a href="<?= basename($_SERVER['PHP_SELF']) . cleanQueryString('sort_by=egn&order=' . ((isset($_GET["sort_by"]) && $_GET["sort_by"] == "egn") ? (($_GET["order"] == "DESC") ? "ASC" : "DESC") : "ASC")) ?>" title="Сортиране по ЕГН">ЕГН</a></th>
                 <th><?php if (isset($_GET["sort_by"]) && $_GET["sort_by"] == "position_name") { ?><img src="img/<?php if (isset($_GET["order"]) && $_GET["order"] == "DESC") { ?>sort_arrow_down.gif<?php } else { ?>sort_arrow_up.gif<?php } ?>" alt="Sort" width="16" height="16" border="0" /><?php } ?><a href="<?= basename($_SERVER['PHP_SELF']) . cleanQueryString('sort_by=position_name&order=' . ((isset($_GET["sort_by"]) && $_GET["sort_by"] == "position_name") ? ((isset($_GET["order"]) && $_GET["order"] == "DESC") ? "ASC" : "DESC") : "ASC")) ?>" title="Сортиране по длъжност">Длъжност</a></th>
-                <th>Предварит. <br />прегледи</th>
+                <th><?php if (isset($_GET["sort_by"]) && $_GET["sort_by"] == "precheckups_num") { ?><img src="img/<?php if (isset($_GET["order"]) && $_GET["order"] == "DESC") { ?>sort_arrow_down.gif<?php } else { ?>sort_arrow_up.gif<?php } ?>" alt="Sort" width="16" height="16" border="0" /><?php } ?><a href="<?= basename($_SERVER['PHP_SELF']) . cleanQueryString('sort_by=precheckups_num&order=' . ((isset($_GET["sort_by"]) && $_GET["sort_by"] == "precheckups_num") ? ((isset($_GET["order"]) && $_GET["order"] == "DESC") ? "ASC" : "DESC") : "ASC")) ?>" title="Сортиране по Предварит. прегледи">Предварит. <br />прегледи</a></th>
                 <th>Болнични <br />листове</th>
                 <th>Фамилна <br />анамнеза</th>
-                <th>ТЕЛК</th>
+                <th><?php if (isset($_GET["sort_by"]) && $_GET["sort_by"] == "patient_telks_num") { ?><img src="img/<?php if (isset($_GET["order"]) && $_GET["order"] == "DESC") { ?>sort_arrow_down.gif<?php } else { ?>sort_arrow_up.gif<?php } ?>" alt="Sort" width="16" height="16" border="0" /><?php } ?><a href="<?= basename($_SERVER['PHP_SELF']) . cleanQueryString('sort_by=patient_telks_num&order=' . ((isset($_GET["sort_by"]) && $_GET["sort_by"] == "patient_telks_num") ? ((isset($_GET["order"]) && $_GET["order"] == "DESC") ? "ASC" : "DESC") : "ASC")) ?>" title="Сортиране по ТЕЛК">ТЕЛК</a></th>
                 <th>Профилакт. <br />прегледи</th>
                 <th>Здравно <br />досие</th>
                 <th>Отвори /<br />Редактирай</th>
@@ -630,30 +634,14 @@ function echoWorkers($firm_id)
               	foreach ($workers as $row) {
               		$IDs[] = $row['worker_id'];
               	}
-              	$aPatientPreCheckups = array();
               	$aPatientCharts = array();
-              	$aPatientTelks = array();
               	$aPatientCheckups = array();
               	if(!empty($IDs)) {
-              		$sql = "SELECT worker_id, COUNT(*) AS `cnt` FROM `medical_precheckups` WHERE `worker_id` IN (".implode(',', $IDs).") GROUP BY `worker_id`";
-              		$flds = $dbInst->query($sql);
-              		if(!empty($flds)) {
-              			foreach ($flds as $fld) {
-              				$aPatientPreCheckups[$fld['worker_id']] = $fld['cnt'];
-              			}
-              		}
               		$sql = "SELECT worker_id, COUNT(*) AS `cnt` FROM `patient_charts` WHERE `worker_id` IN (".implode(',', $IDs).") GROUP BY `worker_id`";
               		$flds = $dbInst->query($sql);
               		if(!empty($flds)) {
               			foreach ($flds as $fld) {
               				$aPatientCharts[$fld['worker_id']] = $fld['cnt'];
-              			}
-              		}
-              		$sql = "SELECT worker_id, COUNT(*) AS `cnt` FROM `telks` WHERE `worker_id` IN (".implode(',', $IDs).") GROUP BY `worker_id`";
-              		$flds = $dbInst->query($sql);
-              		if(!empty($flds)) {
-              			foreach ($flds as $fld) {
-              				$aPatientTelks[$fld['worker_id']] = $fld['cnt'];
               			}
               		}
               		$sql = "SELECT worker_id, COUNT(*) AS `cnt` FROM `medical_checkups` WHERE `worker_id` IN (".implode(',', $IDs).") AND checkup_date != '' GROUP BY `worker_id`";
@@ -665,11 +653,10 @@ function echoWorkers($firm_id)
               		}
               	}
 
-              	$i = 0;
               	foreach ($workers as $row) {
-              		$row['precheckups_num'] = (isset($aPatientPreCheckups[$row['worker_id']])) ? $aPatientPreCheckups[$row['worker_id']] : 0;
+              		$row['precheckups_num'] = (int)$row['precheckups_num'];
               		$row['patient_charts_num'] = (isset($aPatientCharts[$row['worker_id']])) ? $aPatientCharts[$row['worker_id']] : 0;
-              		$row['patient_telks_num'] = (isset($aPatientTelks[$row['worker_id']])) ? $aPatientTelks[$row['worker_id']] : 0;
+              		$row['patient_telks_num'] = (int)$row['patient_telks_num'];
               		$row['checkups_num'] = (isset($aPatientCheckups[$row['worker_id']])) ? $aPatientCheckups[$row['worker_id']] : 0;
 					?>
               <tr>
