@@ -281,8 +281,10 @@ function echoInfo($row, $firm_id)
             <td class="leftSplit">Община:</td>
             <td class="rightSplit"><input type="text" id="community_name" name="community_name" value="<?=HTMLFormat($row['community_name'])?>" size="40" tabindex="3" onchange="xajax_guessCommunity(this.value);return false;" />
               <input type="hidden" id="community_id" name="community_id" value="<?=(($row['community_id']=='')?'0':$row['community_id'])?>" /></td>
-            <td>Факс:</td>
-            <td class="rightSplit"><input type="text" id="fax" name="fax" value="<?=HTMLFormat($row['fax'])?>" size="40" tabindex="9" /></td>
+            <td>БУЛСТАТ:</td>
+            <td class="rightSplit"><input type="text" id="bulstat" name="bulstat" value="<?=HTMLFormat($row['bulstat'])?>" size="40" tabindex="9" />
+                <input type="hidden" id="fax" name="fax" value="<?=HTMLFormat($row['fax'])?>" />
+            </td>
           </tr>
           <tr>
             <td class="leftSplit">Област:</td>

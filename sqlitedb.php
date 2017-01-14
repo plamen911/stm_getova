@@ -1627,7 +1627,7 @@ class SqliteDB
 			'province_name', 'province_id' => 'province_id', 'address' => 'address', 'email' =>
 			'email', 'notes' => 'notes', 'phone1' => 'phone1', 'phone2' => 'phone2', 'fax' =>
 			'fax', 'contract_num' => 'contract_num', 'contract_begin' => 'contract_begin',
-			'contract_end' => 'contract_end');
+			'contract_end' => 'contract_end', 'bulstat' => 'bulstat');
 			while (list($var, $param) = @each($var_list)) {
 				if (isset($aFormValues[$param]))
 				$$var = $this->checkStr($aFormValues[$param]);
@@ -1650,11 +1650,11 @@ class SqliteDB
 			if ($firm_id) { // Update firm
 				$query = "UPDATE firms SET name='$name', `is_active` = '$is_active', location_id='" . intval($location_id) .
 				"', community_id='" . intval($community_id) . "', province_id='" . intval($province_id) .
-				"', address='$address', email='$email', notes='$notes', phone1='$phone1', phone2='$phone2', fax='$fax', date_modified=datetime('now','localtime'), modified_by='$modified_by', contract_num='$contract_num', contract_begin='$contract_begin', contract_end='$contract_end' WHERE firm_id='$firm_id'";
+				"', address='$address', email='$email', notes='$notes', phone1='$phone1', phone2='$phone2', fax='$fax', date_modified=datetime('now','localtime'), modified_by='$modified_by', contract_num='$contract_num', contract_begin='$contract_begin', contract_end='$contract_end', bulstat='$bulstat' WHERE firm_id='$firm_id'";
 			} else { // Insert firm
-				$query = "INSERT INTO firms (name, location_id, community_id, province_id, address, email, notes, phone1, phone2, fax, date_added, date_modified, modified_by, contract_num, contract_begin, contract_end) VALUES ('$name', '" .
+				$query = "INSERT INTO firms (name, location_id, community_id, province_id, address, email, notes, phone1, phone2, fax, date_added, date_modified, modified_by, contract_num, contract_begin, contract_end, bulstat) VALUES ('$name', '" .
 				intval($location_id) . "', '" . intval($community_id) . "', '" . intval($province_id) .
-				"', '$address', '$email', '$notes', '$phone1', '$phone2', '$fax', datetime('now','localtime'), datetime('now','localtime'), '$modified_by', '$contract_num', '$contract_begin', '$contract_end')";
+				"', '$address', '$email', '$notes', '$phone1', '$phone2', '$fax', datetime('now','localtime'), datetime('now','localtime'), '$modified_by', '$contract_num', '$contract_begin', '$contract_end', '$bulstat')";
 			}
 			$count = $db->exec($query); //returns affected rows
 			//echo "Affected Rows: ".$count."<br>";
