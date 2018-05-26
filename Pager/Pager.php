@@ -165,7 +165,7 @@ class Pager
      * @static
      * @access public
      */
-    function &factory($options = array())
+    public static function factory($options = array())
     {
         $mode = (isset($options['mode']) ? ucfirst($options['mode']) : 'Jumping');
         $classname = 'Pager_' . $mode;
@@ -180,7 +180,7 @@ class Pager
 
         // If the class exists, return a new instance of it.
         if (class_exists($classname)) {
-            $pager =& new $classname($options);
+            $pager = new $classname($options);
             return $pager;
         }
 

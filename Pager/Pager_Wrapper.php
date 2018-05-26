@@ -84,7 +84,7 @@ function Pager_Wrapper_DB(&$db, $query, $pager_options = array(), $disabled = fa
 				return $totalItems;
 			}
 		} else {
-			$res =& $db->query($query, $dbparams);
+			$res = $db->query($query, $dbparams);
 			if (PEAR::isError($res)) {
 				return $res;
 			}
@@ -205,7 +205,7 @@ function Pager_Wrapper_MDB2(&$db, $query, $pager_options = array(), $disabled = 
 			}
 		} else {
 			//GROUP BY => fetch the whole resultset and count the rows returned
-			$res =& $db->queryCol($query);
+			$res = $db->queryCol($query);
 			if (PEAR::isError($res)) {
 				return $res;
 			}
@@ -291,7 +291,7 @@ function Pager_Wrapper_Eclipse(&$db, $query, $pager_options = array(), $disabled
 {
 	if (!$disabled) {
 		require_once(ECLIPSE_ROOT . 'PagedQuery.php');
-		$query =& new PagedQuery($db->query($query), $pager_options['perPage']);
+		$query = new PagedQuery($db->query($query), $pager_options['perPage']);
 		$totalrows = $query->getRowCount();
 		$numpages  = $query->getPageCount();
 		$whichpage = isset($_GET[$pager_options['urlVar']]) ? (int)$_GET[$pager_options['urlVar']] - 1 : 0;
@@ -313,8 +313,8 @@ function Pager_Wrapper_Eclipse(&$db, $query, $pager_options = array(), $disabled
 
 	$page = array();
 	require_once(ECLIPSE_ROOT . 'QueryIterator.php');
-	for ($it =& new QueryIterator($result); $it->isValid(); $it->next()) {
-		$page['data'][] =& $it->getCurrent();
+	for ($it = new QueryIterator($result); $it->isValid(); $it->next()) {
+		$page['data'][] = $it->getCurrent();
 	}
 	require_once 'Pager/Pager.php';
 	$pager = Pager::factory($pager_options);
@@ -475,5 +475,3 @@ function Pager_Wrapper_PDO(&$db, $query, $pager_options = array(), $disabled = f
 	}
 	return $page;
 }
-
-?>
