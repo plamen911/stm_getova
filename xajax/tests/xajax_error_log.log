@@ -1,0 +1,36 @@
+** xajax Error Log - Nov  2006 10:55:19 PM **
+----
+[NOTICE] Undefined variable:  silly
+error in line 11 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+----
+[WARNING] myerrorriddenfunction(file_doesnt_exist.php): failed to open stream: No such file or directory
+error in line 14 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+----
+[WARNING] myerrorriddenfunction(): Failed opening 'file_doesnt_exist.php' for inclusion (include_path='.;c:\php4\pear')
+error in line 14 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+
+
+** xajax Error Log - Nov  2006 11:09:02 PM **
+----
+[NOTICE] Undefined variable:  silly
+error in line 11 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+----
+[WARNING] myerrorriddenfunction(file_doesnt_exist.php): failed to open stream: No such file or directory
+error in line 14 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+----
+[WARNING] myerrorriddenfunction(): Failed opening 'file_doesnt_exist.php' for inclusion (include_path='.;c:\php4\pear')
+error in line 14 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+
+
+** xajax Error Log - Nov  2006 08:06:49 AM **
+----
+[NOTICE] Undefined variable:  silly
+error in line 11 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+----
+[WARNING] myerrorriddenfunction(file_doesnt_exist.php): failed to open stream: No such file or directory
+error in line 14 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+----
+[WARNING] myerrorriddenfunction(): Failed opening 'file_doesnt_exist.php' for inclusion (include_path='.;c:\php4\pear')
+error in line 14 of file C:\Documents and Settings\jwoolley\My Documents\xajaxHobbyShopMall\test\xajaxPlugin\trunk\xajax\tests\errorHandlingTest.php
+
+

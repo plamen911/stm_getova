@@ -412,6 +412,11 @@ function echoWorkerData($worker_id, $firmInfo) {
                 </td>
           </tr>
           <tr>
+            <td colspan="4" class="leftSplit rightSplit"><span class="labeltext">Часове на договора:</span>
+                <input type="text" id="work_hours" name="work_hours" value="<?=((isset($f['work_hours']))?HTMLFormat($f['work_hours']):'')?>" size="40" maxlength="50" />
+            </td>
+          </tr>
+          <tr>
             <td colspan="4" class="leftSplit rightSplit"><span class="labeltext">Подразделение: </span>
             	<input type="text" id="subdivision_name" name="subdivision_name" value="<?=((isset($f['s.subdivision_name']))?HTMLFormat($f['s.subdivision_name']):'')?>" size="40" maxlength="60" style="width:59%;" readonly="readonly" />
                 <div class="br"></div>

@@ -2389,7 +2389,7 @@ class SqliteDB
 			'address' => 'address', 'phone1' => 'phone1', 'phone2' => 'phone2', 'firm_id' =>
 			'firm_id', 'map_id' => 'map_id', 'date_curr_position_start' =>
 			'date_curr_position_start', 'date_career_start' => 'date_career_start',
-			'date_retired' => 'date_retired', 'doctor_id' => 'doctor_id');
+			'date_retired' => 'date_retired', 'doctor_id' => 'doctor_id', 'work_hours' => 'work_hours');
 			while (list($var, $param) = @each($var_list)) {
 				if (isset($aFormValues[$param]))
 				$$var = $this->checkStr($aFormValues[$param]);
@@ -2418,13 +2418,13 @@ class SqliteDB
 			if ($worker_id) { // Update worker
 				$query = "UPDATE workers SET firm_id='$firm_id', fname='$fname', sname='$sname', lname='$lname', sex='$sex', egn='$egn', birth_date='$birth_date', location_id='" .
 				intval($location_id) . "', address='$address', phone1='$phone1', phone2='$phone2', map_id='" .
-				intval($map_id) . "', date_curr_position_start='$date_curr_position_start', date_career_start='$date_career_start', date_retired='$date_retired', doctor_id='$doctor_id', date_modified=datetime('now','localtime'), modified_by='$modified_by' WHERE worker_id='$worker_id'";
+				intval($map_id) . "', date_curr_position_start='$date_curr_position_start', date_career_start='$date_career_start', date_retired='$date_retired', doctor_id='$doctor_id', date_modified=datetime('now','localtime'), modified_by='$modified_by', work_hours = '$work_hours' WHERE worker_id='$worker_id'";
 				$count = $db->exec($query); //returns affected rows
 			} else { // Insert worker
-				$query = "INSERT INTO workers (firm_id, fname, sname, lname, sex, egn, birth_date, location_id, address, phone1, phone2, map_id, date_curr_position_start, date_career_start, date_retired, doctor_id, date_added, date_modified, modified_by) VALUES ('" .
+				$query = "INSERT INTO workers (firm_id, fname, sname, lname, sex, egn, birth_date, location_id, address, phone1, phone2, map_id, date_curr_position_start, date_career_start, date_retired, doctor_id, date_added, date_modified, modified_by, work_hours) VALUES ('" .
 				intval($firm_id) . "', '$fname', '$sname', '$lname', '$sex', '$egn', '$birth_date', '" .
 				intval($location_id) . "', '$address', '$phone1', '$phone2', '" . intval($map_id) .
-				"', '$date_curr_position_start', '$date_career_start', '$date_retired', '$doctor_id', datetime('now','localtime'), datetime('now','localtime'), '$modified_by')";
+				"', '$date_curr_position_start', '$date_career_start', '$date_retired', '$doctor_id', datetime('now','localtime'), datetime('now','localtime'), '$modified_by', '$work_hours')";
 				$count = $db->exec($query); //returns affected rows
 				$worker_id = $db->lastInsertId();
 			}

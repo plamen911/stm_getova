@@ -36,7 +36,7 @@ $(document).ready(function() {
 		window.location='acc_w_payments.php?date_from='+$("input#date_from").val()+'&date_to='+$("input#date_to").val();
 	});
 	$("a#lnkExpired").click(function(){
-		window.location='acc_w_expired_contracts.php?date_from='+$("input#date_from2").val()+'&date_to='+$("input#date_to2").val();
+		window.location='acc_w_rtf_expired_contracts.php?date_from='+$("input#date_from2").val()+'&date_to='+$("input#date_to2").val();
 	});
 });
 //]]>

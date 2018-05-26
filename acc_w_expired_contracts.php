@@ -47,7 +47,8 @@ if(!$offline) {
 	//$imgpath = str_replace('/','\\',str_replace(basename($_SERVER['PHP_SELF']),'',$_SERVER["SCRIPT_FILENAME"])).'img\\';
 }
 
-$sql = "SELECT c.*, f.`name` AS `firm_name`, f.`address`, L.`location_name`
+$sql = "SELECT c.*, f.`name` AS `firm_name`, f.`address`, L.`location_name`,
+        f.`phone1` AS `phone1`, f.`phone2` AS `phone2`
 		FROM `acc_contracts` c
 		LEFT JOIN `firms` f ON (f.`firm_id` = c.`firm_id`)
 		LEFT JOIN `locations` L ON (L.`location_id` = f.`location_id`)

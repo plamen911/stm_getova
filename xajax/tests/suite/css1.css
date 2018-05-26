@@ -1,0 +1,9 @@
+.loadCSS1 {
+	visibility: hidden;
+}
+.unloadCSS1 {
+	visibility: visible;
+}
+.output {
+	background: #aaff99;
+}
