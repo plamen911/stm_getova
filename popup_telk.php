@@ -83,7 +83,9 @@ function openTelk($telk_id)
         $objResponse->assign("mkb_desc_4", "innerHTML", $row['mkb_desc_4']);
         $objResponse->assign("percent_inv", "value", $row['percent_inv']);
         $objResponse->assign("bad_work_env", "value", $row['bad_work_env']);
-        $objResponse->call('addAccompanyingDiseases', $row['accompanying_diseases']);
+        if (!empty($row['accompanying_diseases'])) {
+            $objResponse->call('addAccompanyingDiseases', $row['accompanying_diseases']);
+        }
 
         $w = $dbInst->getWorkerInfo($row['worker_id']);
         $objResponse->assign("wname", "value", ($w['fname'] . ' ' . $w['sname'] . ' ' . $w['lname']));
@@ -339,7 +341,7 @@ return $buff;
       }
 
       function addAccompanyingDiseases (accompanyingDiseases) {
-        if (accompanyingDiseases.length > 0) {
+        if (accompanyingDiseases && accompanyingDiseases.length > 0) {
           accompanyingDiseases.forEach(function (accompanyingDisease) {
             addAccompanyingDisease({
               mkb_id: accompanyingDisease.mkb_id,
@@ -793,7 +795,7 @@ return $buff;
                                             />
                                         </a>
                                     </div>
-                                    <ul id="accompanyingDiseaseList"></ul>
+                                    <ul id="accompanyingDiseaseList" style="max-height: 100px; overflow: auto"></ul>
                                 </div>
 
                                 <div class="hr"></div>
