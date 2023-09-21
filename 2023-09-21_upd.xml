@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<data>
+    <sql>
+        <query>CREATE TABLE telk_accompanying_diseases
+            (
+                telk_id INTEGER DEFAULT NULL
+                    CONSTRAINT telk_accompanying_diseases_telks_telk_id_fk
+                    REFERENCES telks,
+                mkb_id TEXT DEFAULT NULL
+                    CONSTRAINT telk_accompanying_diseases_mkb_mkb_id_fk
+                    REFERENCES mkb,
+                position INTEGER
+            )</query>
+    </sql>
+</data>

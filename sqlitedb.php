@@ -1579,6 +1579,8 @@ class SqliteDB
      */
 	public function getTelkInfo($telk_id)
 	{
+        $telk_id = (int)$telk_id;
+
 		$db = $this->getDBHandle();
 		$query = "	SELECT t.*,
 					strftime('%d.%m.%Y', t.telk_date_from, 'localtime') AS telk_date_from2,
@@ -1594,7 +1596,7 @@ class SqliteDB
 					(SELECT mkb_desc FROM mkb m WHERE m.mkb_id = t.mkb_id_4) AS mkb_desc_4,
 					(SELECT mkb_code FROM mkb m WHERE m.mkb_id = t.mkb_id_4) AS mkb_code_4
 					FROM telks t
-					WHERE t.telk_id = '" . intval($telk_id) . "'";
+					WHERE t.telk_id = $telk_id";
 		try {
 			$prepstatement = $db->prepare($query);
 			if (!$prepstatement) {
@@ -1604,6 +1606,25 @@ class SqliteDB
 			}
 			$prepstatement->execute();
 			$result = $prepstatement->fetch(PDO::FETCH_ASSOC);
+
+            $sql = "SELECT d.mkb_id AS mkb_id, m.mkb_desc AS mkb_desc, m.mkb_code AS mkb_code
+                    FROM telk_accompanying_diseases d
+                    LEFT JOIN mkb m on m.mkb_id = d.mkb_id
+                    WHERE d.telk_id = $telk_id
+                    ORDER BY d.position";
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            $fields = $stmt->fetchAll();
+            $accompanyingDiseases = [];
+            foreach ($fields as $field) {
+                $accompanyingDiseases[] = [
+                    'mkb_id' => $field['mkb_id'],
+                    'mkb_desc' => $field['mkb_desc'],
+                    'mkb_code' => $field['mkb_code'],
+                ];
+            }
+            $result['accompanying_diseases'] = $accompanyingDiseases;
+
 			return $result;
 		}
 		catch (PDOException $e) {
@@ -2605,6 +2626,12 @@ class SqliteDB
 				$count = $db->exec($query); //returns affected rows
 				$telk_id = $db->lastInsertId();
 			}
+
+            $accompanyingDiseases = !empty($aFormValues['accompanying_diseases'])
+                ? (array)$aFormValues['accompanying_diseases'] : [];
+
+            $this->storeAccompanyingDiseases($telk_id, $accompanyingDiseases);
+
 			return $telk_id;
 		}
 		catch (exception $e) {
@@ -5114,454 +5141,482 @@ class SqliteDB
 				ORDER BY cnt DESC";
 		$rows = $this->query($sql);
 		if ($rows) {
-			$retStr .= <<< EOT
-<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width="50%"
- style='width:50.0%;margin-left:1.9pt;border-collapse:collapse;border:none;
- mso-border-alt:solid windowtext .5pt;mso-yfti-tbllook:480;mso-padding-alt:
- 0cm 5.4pt 0cm 5.4pt;mso-border-insideh:.5pt solid windowtext;mso-border-insidev:
- .5pt solid windowtext'>
- <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
-  <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;mso-border-alt:
-  solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:14.0pt'>МКБ</span></b><o:p></o:p></p>
-  </td>
-  <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;border-left:
-  none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:14.0pt'>бр. заболели</span></b><span lang=EN-US
-  style='mso-ansi-language:EN-US'><o:p></o:p></span></p>
-  </td>
- </tr>
+                $retStr .= <<< EOT
+    <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width="50%"
+     style='width:50.0%;margin-left:1.9pt;border-collapse:collapse;border:none;
+     mso-border-alt:solid windowtext .5pt;mso-yfti-tbllook:480;mso-padding-alt:
+     0cm 5.4pt 0cm 5.4pt;mso-border-insideh:.5pt solid windowtext;mso-border-insidev:
+     .5pt solid windowtext'>
+     <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+      <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;mso-border-alt:
+      solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:14.0pt'>МКБ</span></b><o:p></o:p></p>
+      </td>
+      <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;border-left:
+      none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:14.0pt'>бр. заболели</span></b><span lang=EN-US
+      style='mso-ansi-language:EN-US'><o:p></o:p></span></p>
+      </td>
+     </tr>
 EOT;
-			$_mkb = array();
-			$_data = array();
-			$i = 0;
-			foreach ($rows as $row) {
-				$worker_id = $row['d.worker_id'];
-				$checkup_id = $row['d.checkup_id'];
-				$cnt = $row['cnt'];
-				$fields = $this->getDiseases($checkup_id);
-				if ($fields) {
-					$_tmp = array();
-					foreach ($fields as $field) {
-						$_tmp[] = $field['mkb_id'];
-					}
-					$mkb = implode(', ', $_tmp);
-					if (in_array($mkb, $_mkb)) {
-						$_data[$mkb]++;
-					} else {
-						$_data[$mkb] = 1;
-						$_mkb[] = $mkb;
-					}
-				}
-			}
-			arsort($_data); // Sort an array in reverse order and maintain index association
+                $_mkb = array();
+                $_data = array();
+                $i = 0;
+                foreach ($rows as $row) {
+                    $worker_id = $row['d.worker_id'];
+                    $checkup_id = $row['d.checkup_id'];
+                    $cnt = $row['cnt'];
+                    $fields = $this->getDiseases($checkup_id);
+                    if ($fields) {
+                        $_tmp = array();
+                        foreach ($fields as $field) {
+                            $_tmp[] = $field['mkb_id'];
+                        }
+                        $mkb = implode(', ', $_tmp);
+                        if (in_array($mkb, $_mkb)) {
+                            $_data[$mkb]++;
+                        } else {
+                            $_data[$mkb] = 1;
+                            $_mkb[] = $mkb;
+                        }
+                    }
+                }
+                arsort($_data); // Sort an array in reverse order and maintain index association
 
-			$i = 1;
-			foreach ($_data as $key => $val) {
-				$retStr .= <<< EOT
-<tr style='mso-yfti-irow:$i'>
-  <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;border-top:
-  none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:11.0pt;mso-bidi-font-weight:bold'>$key</span><span lang=EN-US style='font-size:11.0pt;mso-ansi-language:
-  EN-US'><o:p></o:p></span></p>
-  </td>
-  <td width="50%" style='width:50.0%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'>
-    <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
-  style='font-size:11.0pt;mso-ansi-language:EN-US'>$val<o:p></o:p></span></p></td>
- </tr>
+                $i = 1;
+                foreach ($_data as $key => $val) {
+                    $retStr .= <<< EOT
+    <tr style='mso-yfti-irow:$i'>
+      <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;border-top:
+      none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><span
+      style='font-size:11.0pt;mso-bidi-font-weight:bold'>$key</span><span lang=EN-US style='font-size:11.0pt;mso-ansi-language:
+      EN-US'><o:p></o:p></span></p>
+      </td>
+      <td width="50%" style='width:50.0%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'>
+        <p class=MsoNormal align=center style='text-align:center'><span lang=EN-US
+      style='font-size:11.0pt;mso-ansi-language:EN-US'>$val<o:p></o:p></span></p></td>
+     </tr>
 EOT;
-				$i++;
-				$total += $val;
-			}
-			$retStr .= <<< EOT
- <tr style='mso-yfti-irow:6;mso-yfti-lastrow:yes'>
-  <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;border-top:
-  none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:11.0pt'>ВСИЧКО</span></b><b style='mso-bidi-font-weight:
-  normal'><span style='font-size:11.0pt'><o:p></o:p></span></b></p>
-  </td>
-  <td width="50%" style='width:50.0%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b
-  style='mso-bidi-font-weight:normal'><span style='font-size:11.0pt'>$total<o:p></o:p></span></b></p>
-  </td>
- </tr>
-</table>
+                    $i++;
+                    $total += $val;
+                }
+                $retStr .= <<< EOT
+     <tr style='mso-yfti-irow:6;mso-yfti-lastrow:yes'>
+      <td width="50%" style='width:50.0%;border:solid windowtext 1.0pt;border-top:
+      none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:11.0pt'>ВСИЧКО</span></b><b style='mso-bidi-font-weight:
+      normal'><span style='font-size:11.0pt'><o:p></o:p></span></b></p>
+      </td>
+      <td width="50%" style='width:50.0%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b
+      style='mso-bidi-font-weight:normal'><span style='font-size:11.0pt'>$total<o:p></o:p></span></b></p>
+      </td>
+     </tr>
+    </table>
 EOT;
-}
-return array('table' => $retStr, 'total' => $total);
-}
+    }
+    return array('table' => $retStr, 'total' => $total);
+    }
 
-	// Usage: $_data = $dbInst->getNosologicTable1($table='patient_charts', $join='', $condition="medical_types LIKE '%\"1\"%'", $firm_id = 172, $date_from = '2007-01-01 00:00:00', $date_to = '2008-12-31 23:59:59')
-	public function getNosologicTable($calc = 'COUNT(*)', $table = 'patient_charts', $join = '', $condition = "medical_types LIKE '%\"1\"%'", $firm_id = 172, $date_from = '2007-01-01 00:00:00', $date_to = '2008-12-31 23:59:59') {
-		$db = $this->getDBHandle();
-		$retStr = '';
-		$total = 0;
-		$cnt2 = 0;
-		// Example:
-		/*	$query = "	SELECT *, COUNT(*) AS cnt
-		FROM family_diseases d
-		LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
-		LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
-		LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)
-		LEFT JOIN medical_checkups c ON (c.checkup_id = d.checkup_id)
-		WHERE d.firm_id = $firm_id
-		AND (julianday(c.checkup_date) >= julianday('$date_from'))
-		AND (julianday(c.checkup_date) <= julianday('$date_to'))
-		GROUP BY d.mkb_id
-		ORDER BY cnt DESC, cl.class_id, g.group_id, m.mkb_id";*/
+        // Usage: $_data = $dbInst->getNosologicTable1($table='patient_charts', $join='', $condition="medical_types LIKE '%\"1\"%'", $firm_id = 172, $date_from = '2007-01-01 00:00:00', $date_to = '2008-12-31 23:59:59')
+        public function getNosologicTable($calc = 'COUNT(*)', $table = 'patient_charts', $join = '', $condition = "medical_types LIKE '%\"1\"%'", $firm_id = 172, $date_from = '2007-01-01 00:00:00', $date_to = '2008-12-31 23:59:59') {
+            $db = $this->getDBHandle();
+            $retStr = '';
+            $total = 0;
+            $cnt2 = 0;
+            // Example:
+            /*	$query = "	SELECT *, COUNT(*) AS cnt
+            FROM family_diseases d
+            LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
+            LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
+            LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)
+            LEFT JOIN medical_checkups c ON (c.checkup_id = d.checkup_id)
+            WHERE d.firm_id = $firm_id
+            AND (julianday(c.checkup_date) >= julianday('$date_from'))
+            AND (julianday(c.checkup_date) <= julianday('$date_to'))
+            GROUP BY d.mkb_id
+            ORDER BY cnt DESC, cl.class_id, g.group_id, m.mkb_id";*/
 
-		$sql = "SELECT d.worker_id AS worker_id, cl.class_id AS class_id, cl.class_name AS class_name, g.group_id AS group_id, g.group_name AS group_name, 
-				d.mkb_id AS mkb_id, m.mkb_desc AS mkb_desc, $calc AS cnt , COUNT(*) AS cnt2
-				FROM $table d
-				LEFT JOIN workers w ON ( w.worker_id = d.worker_id )
-				LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
-				LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
-				LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)	
-				$join
-				WHERE d.firm_id = $firm_id
-				AND w.is_active = 1
-				AND ( w.date_retired = '' OR julianday(w.date_retired) >= julianday('$date_from') )
-				AND ( w.date_curr_position_start = '' OR julianday(w.date_curr_position_start) <= julianday('$date_to') )
-				" . (($condition != '') ? ' AND ' . $condition : '') . "
-				GROUP BY d.mkb_id
-				ORDER BY cl.class_id, g.group_id, cnt DESC, m.mkb_id";
+            $sql = "SELECT d.worker_id AS worker_id, cl.class_id AS class_id, cl.class_name AS class_name, g.group_id AS group_id, g.group_name AS group_name, 
+                    d.mkb_id AS mkb_id, m.mkb_desc AS mkb_desc, $calc AS cnt , COUNT(*) AS cnt2
+                    FROM $table d
+                    LEFT JOIN workers w ON ( w.worker_id = d.worker_id )
+                    LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
+                    LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
+                    LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)	
+                    $join
+                    WHERE d.firm_id = $firm_id
+                    AND w.is_active = 1
+                    AND ( w.date_retired = '' OR julianday(w.date_retired) >= julianday('$date_from') )
+                    AND ( w.date_curr_position_start = '' OR julianday(w.date_curr_position_start) <= julianday('$date_to') )
+                    " . (($condition != '') ? ' AND ' . $condition : '') . "
+                    GROUP BY d.mkb_id
+                    ORDER BY cl.class_id, g.group_id, cnt DESC, m.mkb_id";
 
-		$rows = $this->fnSelectRows($sql);
-		if ($rows) {
-			$class_id = -1;
-			$group_id = -1;
-			$class_inc = 1;
-			$_class_inc = 'I';
-			$group_inc = 1;
-			$mkb_inc = 1;
-			//$_label = ('COUNT(*)' == $calc) ? 'бр. заболявания' : 'бр. дни ЗВН';
-			$_label = ('COUNT(*)' == $calc) ? 'Брой случаи' : 'бр. дни ЗВН';
-			$retStr .= <<< EOT
-<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width="99%"
- style='width:99.18%;margin-left:1.9pt;border-collapse:collapse;border:none;
- mso-border-alt:solid windowtext .5pt;mso-yfti-tbllook:480;mso-padding-alt:
- 0cm 5.4pt 0cm 5.4pt;mso-border-insideh:.5pt solid windowtext;mso-border-insidev:
- .5pt solid windowtext'>
- <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
-  <td width="67%" style='width:67.2%;border:solid windowtext 1.0pt;mso-border-alt:
-  solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:14.0pt'>Наименование</span></b></p>
-  </td>
-  <td width="13%" style='width:13.02%;border:solid windowtext 1.0pt;border-left:
-  none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:14.0pt'>МКБ</span></b></p>
-  </td>
-  <td width="19%" style='width:19.78%;border:solid windowtext 1.0pt;border-left:
-  none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:14.0pt'>$_label</span></b></p>
-  </td>
- </tr>
+            $rows = $this->fnSelectRows($sql);
+            if ($rows) {
+                $class_id = -1;
+                $group_id = -1;
+                $class_inc = 1;
+                $_class_inc = 'I';
+                $group_inc = 1;
+                $mkb_inc = 1;
+                //$_label = ('COUNT(*)' == $calc) ? 'бр. заболявания' : 'бр. дни ЗВН';
+                $_label = ('COUNT(*)' == $calc) ? 'Брой случаи' : 'бр. дни ЗВН';
+                $retStr .= <<< EOT
+    <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0 width="99%"
+     style='width:99.18%;margin-left:1.9pt;border-collapse:collapse;border:none;
+     mso-border-alt:solid windowtext .5pt;mso-yfti-tbllook:480;mso-padding-alt:
+     0cm 5.4pt 0cm 5.4pt;mso-border-insideh:.5pt solid windowtext;mso-border-insidev:
+     .5pt solid windowtext'>
+     <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+      <td width="67%" style='width:67.2%;border:solid windowtext 1.0pt;mso-border-alt:
+      solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:14.0pt'>Наименование</span></b></p>
+      </td>
+      <td width="13%" style='width:13.02%;border:solid windowtext 1.0pt;border-left:
+      none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:14.0pt'>МКБ</span></b></p>
+      </td>
+      <td width="19%" style='width:19.78%;border:solid windowtext 1.0pt;border-left:
+      none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:14.0pt'>$_label</span></b></p>
+      </td>
+     </tr>
 EOT;
-			$i = 1;
-			foreach ($rows as $row) {
-				$cnt2 += $row['cnt2'];
-				if(empty($row['class_id'])) $row['class_id'] = 0;
-				if(empty($row['class_name'])) $row['class_name'] = '--';
-				if(empty($row['group_id'])) $row['group_id'] = 0;
-				if(empty($row['group_name'])) $row['group_name'] = '--';
-				if(empty($row['mkb_desc'])) $row['mkb_desc'] = '--';
-				// Classes ==============================
-				if ($class_id != $row['class_id']) {
-					$class_id = $row['class_id'];
-					$group_inc = 1;
-					$mkb_inc = 1;
-					list($class_name, $class_mkb) = $this->parse_group_mkb($row['class_name']);
-					$converter = new ConvertRoman($class_inc);
-					$_class_inc = $converter->result();
+                $i = 1;
+                foreach ($rows as $row) {
+                    $cnt2 += $row['cnt2'];
+                    if(empty($row['class_id'])) $row['class_id'] = 0;
+                    if(empty($row['class_name'])) $row['class_name'] = '--';
+                    if(empty($row['group_id'])) $row['group_id'] = 0;
+                    if(empty($row['group_name'])) $row['group_name'] = '--';
+                    if(empty($row['mkb_desc'])) $row['mkb_desc'] = '--';
+                    // Classes ==============================
+                    if ($class_id != $row['class_id']) {
+                        $class_id = $row['class_id'];
+                        $group_inc = 1;
+                        $mkb_inc = 1;
+                        list($class_name, $class_mkb) = $this->parse_group_mkb($row['class_name']);
+                        $converter = new ConvertRoman($class_inc);
+                        $_class_inc = $converter->result();
 
-					$sql = "SELECT $calc AS cnt
-							FROM $table d
-							LEFT JOIN workers w ON ( w.worker_id = d.worker_id )
-							LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
-							LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
-							LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)
-							$join
-							WHERE d.firm_id = $firm_id
-							AND w.is_active = 1
-							AND ( w.date_retired = '' OR julianday(w.date_retired) >= julianday('$date_from') )
-							AND ( w.date_curr_position_start = '' OR julianday(w.date_curr_position_start) <= julianday('$date_to') )						
-							" . (($condition != '') ? ' AND ' . $condition : '') . "
-							AND cl.class_id = $class_id";
-					$cnt = $this->fnSelectSingleRow($sql);
+                        $sql = "SELECT $calc AS cnt
+                                FROM $table d
+                                LEFT JOIN workers w ON ( w.worker_id = d.worker_id )
+                                LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
+                                LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
+                                LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)
+                                $join
+                                WHERE d.firm_id = $firm_id
+                                AND w.is_active = 1
+                                AND ( w.date_retired = '' OR julianday(w.date_retired) >= julianday('$date_from') )
+                                AND ( w.date_curr_position_start = '' OR julianday(w.date_curr_position_start) <= julianday('$date_to') )						
+                                " . (($condition != '') ? ' AND ' . $condition : '') . "
+                                AND cl.class_id = $class_id";
+                        $cnt = $this->fnSelectSingleRow($sql);
 
-					$retStr .= <<< EOT
- <tr style='mso-yfti-irow:$i'>
-  <td width="67%" valign=top style='width:67.2%;border:solid windowtext 1.0pt;
-  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal><b><span style='font-size:11.0pt'>$_class_inc. $class_name</span></b>
-  <span style='font-size:11.0pt'><o:p></o:p></span></p>
-  </td>
-  <td width="13%" style='width:13.02%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:11.0pt'>$class_mkb</span></b><span style='font-size:11.0pt'><o:p></o:p></span></p>
-  </td>
-  <td width="19%" style='width:19.78%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:11.0pt'>$cnt[0]</span></b><span style='font-size:11.0pt'><o:p></o:p></span></p>
-  </td>
- </tr>
+                        $retStr .= <<< EOT
+     <tr style='mso-yfti-irow:$i'>
+      <td width="67%" valign=top style='width:67.2%;border:solid windowtext 1.0pt;
+      border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal><b><span style='font-size:11.0pt'>$_class_inc. $class_name</span></b>
+      <span style='font-size:11.0pt'><o:p></o:p></span></p>
+      </td>
+      <td width="13%" style='width:13.02%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:11.0pt'>$class_mkb</span></b><span style='font-size:11.0pt'><o:p></o:p></span></p>
+      </td>
+      <td width="19%" style='width:19.78%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:11.0pt'>$cnt[0]</span></b><span style='font-size:11.0pt'><o:p></o:p></span></p>
+      </td>
+     </tr>
 EOT;
-					$class_inc++;
-}
-// Groups ==============================
-if ($group_id != $row['group_id']) {
-	$group_id = $row['group_id'];
-	$mkb_inc = 1;
-	list($group_name, $group_mkb) = $this->parse_group_mkb($row['group_name']);
+                        $class_inc++;
+    }
+    // Groups ==============================
+    if ($group_id != $row['group_id']) {
+        $group_id = $row['group_id'];
+        $mkb_inc = 1;
+        list($group_name, $group_mkb) = $this->parse_group_mkb($row['group_name']);
 
-	$sql = "SELECT $calc AS cnt
-			FROM $table d
-			LEFT JOIN workers w ON ( w.worker_id = d.worker_id )
-			LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
-			LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
-			LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)
-			$join
-			WHERE d.firm_id = $firm_id
-			AND w.is_active = 1
-			AND ( w.date_retired = '' OR julianday(w.date_retired) >= julianday('$date_from') )
-			AND ( w.date_curr_position_start = '' OR julianday(w.date_curr_position_start) <= julianday('$date_to') )	
-			" . (($condition != '') ? ' AND ' . $condition : '') . "
-			AND g.group_id = $group_id";
-	$cnt = $this->fnSelectSingleRow($sql);
+        $sql = "SELECT $calc AS cnt
+                FROM $table d
+                LEFT JOIN workers w ON ( w.worker_id = d.worker_id )
+                LEFT JOIN mkb m ON (m.mkb_id = d.mkb_id)
+                LEFT JOIN mkb_groups g ON (g.group_id = m.group_id)
+                LEFT JOIN mkb_classes cl ON (cl.class_id = g.class_id)
+                $join
+                WHERE d.firm_id = $firm_id
+                AND w.is_active = 1
+                AND ( w.date_retired = '' OR julianday(w.date_retired) >= julianday('$date_from') )
+                AND ( w.date_curr_position_start = '' OR julianday(w.date_curr_position_start) <= julianday('$date_to') )	
+                " . (($condition != '') ? ' AND ' . $condition : '') . "
+                AND g.group_id = $group_id";
+        $cnt = $this->fnSelectSingleRow($sql);
 
-	$retStr .= <<< EOT
- <tr style='mso-yfti-irow:$i'>
-  <td width="67%" valign=top style='width:67.2%;border:solid windowtext 1.0pt;
-  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  background:#E6E6E6;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal><b><span style='font-size:11.0pt'>$_class_inc.$group_inc. $group_name<o:p></o:p></span></b></p>
-  </td>
-  <td width="13%" style='width:13.02%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;background:#E6E6E6;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:11.0pt;mso-bidi-font-weight:bold'>$group_mkb</span><span
-  style='font-size:11.0pt'><o:p></o:p></span></b></p>
-  </td>
-  <td width="19%" style='width:19.78%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;background:#E6E6E6;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:11.0pt'>$cnt[0]<o:p></o:p></span></b></p>
-  </td>
- </tr>
+        $retStr .= <<< EOT
+     <tr style='mso-yfti-irow:$i'>
+      <td width="67%" valign=top style='width:67.2%;border:solid windowtext 1.0pt;
+      border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      background:#E6E6E6;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal><b><span style='font-size:11.0pt'>$_class_inc.$group_inc. $group_name<o:p></o:p></span></b></p>
+      </td>
+      <td width="13%" style='width:13.02%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;background:#E6E6E6;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:11.0pt;mso-bidi-font-weight:bold'>$group_mkb</span><span
+      style='font-size:11.0pt'><o:p></o:p></span></b></p>
+      </td>
+      <td width="19%" style='width:19.78%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;background:#E6E6E6;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:11.0pt'>$cnt[0]<o:p></o:p></span></b></p>
+      </td>
+     </tr>
 EOT;
-	$group_inc++;
-}
-// MKB  ==============================
-$retStr .= <<< EOT
-<tr style='mso-yfti-irow:$i'>
-  <td width="67%" valign=top style='width:67.2%;border:solid windowtext 1.0pt;
-  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal><span style='font-size:11.0pt'>$mkb_inc. $row[mkb_desc]<o:p></o:p></span></p>
-  </td>
-  <td width="13%" style='width:13.02%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:11.0pt;mso-bidi-font-weight:bold'>$row[mkb_id]</span><span
-  style='font-size:11.0pt'><o:p></o:p></span></p>
-  </td>
-  <td width="19%" style='width:19.78%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><span
-  style='font-size:11.0pt'>$row[cnt]<o:p></o:p></span></p>
-  </td>
- </tr>
+        $group_inc++;
+    }
+    // MKB  ==============================
+    $retStr .= <<< EOT
+    <tr style='mso-yfti-irow:$i'>
+      <td width="67%" valign=top style='width:67.2%;border:solid windowtext 1.0pt;
+      border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal><span style='font-size:11.0pt'>$mkb_inc. $row[mkb_desc]<o:p></o:p></span></p>
+      </td>
+      <td width="13%" style='width:13.02%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><span
+      style='font-size:11.0pt;mso-bidi-font-weight:bold'>$row[mkb_id]</span><span
+      style='font-size:11.0pt'><o:p></o:p></span></p>
+      </td>
+      <td width="19%" style='width:19.78%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><span
+      style='font-size:11.0pt'>$row[cnt]<o:p></o:p></span></p>
+      </td>
+     </tr>
 EOT;
-$i++;
-$mkb_inc++;
-$total += $row['cnt'];
+    $i++;
+    $mkb_inc++;
+    $total += $row['cnt'];
 
-} // end foreach
+    } // end foreach
 
-$retStr .= <<< EOT
-<tr style='mso-yfti-irow:$i;mso-yfti-lastrow:yes'>
-  <td width="67%" style='width:67.2%;border:solid windowtext 1.0pt;border-top:
-  none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
-  background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b><span
-  style='font-size:11.0pt'>ВСИЧКО</span></b><b style='mso-bidi-font-weight:
-  normal'><span style='font-size:11.0pt'><o:p></o:p></span></b></p>
-  </td>
-  <td width="13%" style='width:13.02%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b
-  style='mso-bidi-font-weight:normal'><span style='font-size:11.0pt'><o:p>&nbsp;</o:p></span></b></p>
-  </td>
-  <td width="19%" style='width:19.78%;border-top:none;border-left:none;
-  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
-  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
-  mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
-  <p class=MsoNormal align=center style='text-align:center'><b
-  style='mso-bidi-font-weight:normal'><span style='font-size:11.0pt'>$total<o:p></o:p></span></b></p>
-  </td>
- </tr>
+    $retStr .= <<< EOT
+    <tr style='mso-yfti-irow:$i;mso-yfti-lastrow:yes'>
+      <td width="67%" style='width:67.2%;border:solid windowtext 1.0pt;border-top:
+      none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b><span
+      style='font-size:11.0pt'>ВСИЧКО</span></b><b style='mso-bidi-font-weight:
+      normal'><span style='font-size:11.0pt'><o:p></o:p></span></b></p>
+      </td>
+      <td width="13%" style='width:13.02%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b
+      style='mso-bidi-font-weight:normal'><span style='font-size:11.0pt'><o:p>&nbsp;</o:p></span></b></p>
+      </td>
+      <td width="19%" style='width:19.78%;border-top:none;border-left:none;
+      border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;background:#CCFFCC;padding:0cm 5.4pt 0cm 5.4pt'>
+      <p class=MsoNormal align=center style='text-align:center'><b
+      style='mso-bidi-font-weight:normal'><span style='font-size:11.0pt'>$total<o:p></o:p></span></b></p>
+      </td>
+     </tr>
 EOT;
-$retStr .= '</table>';
-}
-return array('table' => $retStr, 'total' => $total, 'cnt' => $cnt2);
-}
+    $retStr .= '</table>';
+    }
+    return array('table' => $retStr, 'total' => $total, 'cnt' => $cnt2);
+    }
 
-// Make all `mkb_id` upper case
-public function makeAllMkbUpperCase()
-{
-	$db = $this->getDBHandle();
-	$_tables = array('anamnesis_id' => 'anamnesis', 'disease_id' =>
-	'family_diseases', 'family_weight_id' => 'family_weights', 'chart_id' =>
-	'patient_charts', 'prchk_id' => 'prchk_diagnosis');
-	try {
-		$db->beginTransaction();
-		foreach ($_tables as $key => $table) {
-			$rows = $this->fnSelectRows("SELECT * FROM $table");
-			foreach ($rows as $row) {
-				$query = "UPDATE $table SET mkb_id = '" . mb_strtoupper($row['mkb_id'], 'utf-8') .
-				"' WHERE $key = $row[$key]";
-				$count = $db->exec($query); //returns affected rows
-			}
-		}
-		$rows = $this->fnSelectRows("SELECT * FROM telks");
-		foreach ($rows as $row) {
-			$query = "UPDATE telks SET mkb_id_1 = '" . mb_strtoupper($row['mkb_id_1'],
-			'utf-8') . "', mkb_id_2 = '" . mb_strtoupper($row['mkb_id_2'], 'utf-8') .
-			"', mkb_id_3 = '" . mb_strtoupper($row['mkb_id_3'], 'utf-8') . "', mkb_id_4 = '" .
-			mb_strtoupper($row['mkb_id_4'], 'utf-8') . "',  WHERE telk_id = $row[telk_id]";
-			$count = $db->exec($query); //returns affected rows
-		}
+    // Make all `mkb_id` upper case
+    public function makeAllMkbUpperCase()
+    {
+        $db = $this->getDBHandle();
+        $_tables = array('anamnesis_id' => 'anamnesis', 'disease_id' =>
+        'family_diseases', 'family_weight_id' => 'family_weights', 'chart_id' =>
+        'patient_charts', 'prchk_id' => 'prchk_diagnosis');
+        try {
+            $db->beginTransaction();
+            foreach ($_tables as $key => $table) {
+                $rows = $this->fnSelectRows("SELECT * FROM $table");
+                foreach ($rows as $row) {
+                    $query = "UPDATE $table SET mkb_id = '" . mb_strtoupper($row['mkb_id'], 'utf-8') .
+                    "' WHERE $key = $row[$key]";
+                    $count = $db->exec($query); //returns affected rows
+                }
+            }
+            $rows = $this->fnSelectRows("SELECT * FROM telks");
+            foreach ($rows as $row) {
+                $query = "UPDATE telks SET mkb_id_1 = '" . mb_strtoupper($row['mkb_id_1'],
+                'utf-8') . "', mkb_id_2 = '" . mb_strtoupper($row['mkb_id_2'], 'utf-8') .
+                "', mkb_id_3 = '" . mb_strtoupper($row['mkb_id_3'], 'utf-8') . "', mkb_id_4 = '" .
+                mb_strtoupper($row['mkb_id_4'], 'utf-8') . "',  WHERE telk_id = $row[telk_id]";
+                $count = $db->exec($query); //returns affected rows
+            }
 
-		$db->commit();
-	}
-	catch (exception $e) {
-		$db->rollBack();
-		die("Грешка при изпълнение на заявка към базата данни: " . $e->getMessage());
-	}
-}
+            $db->commit();
+        }
+        catch (exception $e) {
+            $db->rollBack();
+            die("Грешка при изпълнение на заявка към базата данни: " . $e->getMessage());
+        }
+    }
 
-/**
-	* @desc Write to log table logged-in users
-	*/
-public function write2Log() {
-	$session_id = (isset($_SESSION)) ? session_id() : '';
-	$user_name = (isset($_SESSION['sess_user_name'])) ? $this->checkStr($_SESSION['sess_user_name']) : '';
-	$fname = (isset($_SESSION['sess_fname'])) ? $this->checkStr($_SESSION['sess_fname']) : '';
-	$lname = (isset($_SESSION['sess_lname'])) ? $this->checkStr($_SESSION['sess_lname']) : '';
-	$REMOTE_ADDR = (isset($_SERVER["REMOTE_ADDR"])) ? $_SERVER["REMOTE_ADDR"] : '';
-	$HTTP_USER_AGENT = (isset($_SERVER["HTTP_USER_AGENT"])) ? $_SERVER["HTTP_USER_AGENT"] : '';
-	$date_accessed = date("Y-m-d H:i:s", time());
+    /**
+        * @desc Write to log table logged-in users
+        */
+    public function write2Log() {
+        $session_id = (isset($_SESSION)) ? session_id() : '';
+        $user_name = (isset($_SESSION['sess_user_name'])) ? $this->checkStr($_SESSION['sess_user_name']) : '';
+        $fname = (isset($_SESSION['sess_fname'])) ? $this->checkStr($_SESSION['sess_fname']) : '';
+        $lname = (isset($_SESSION['sess_lname'])) ? $this->checkStr($_SESSION['sess_lname']) : '';
+        $REMOTE_ADDR = (isset($_SERVER["REMOTE_ADDR"])) ? $_SERVER["REMOTE_ADDR"] : '';
+        $HTTP_USER_AGENT = (isset($_SERVER["HTTP_USER_AGENT"])) ? $_SERVER["HTTP_USER_AGENT"] : '';
+        $date_accessed = date("Y-m-d H:i:s", time());
 
-	$db = $this->getDBHandle();
-	try {
-		$db->beginTransaction();
-		$query = "CREATE TABLE IF NOT EXISTS access_log ([id] integer PRIMARY KEY AUTOINCREMENT, [session_id] VARCHAR, [user_name] VARCHAR, [fname] VARCHAR, [lname] VARCHAR, [REMOTE_ADDR] VARCHAR, [HTTP_USER_AGENT] VARCHAR, [date_accessed] DATETIME DEFAULT CURRENT_DATE)";
-		$count = $db->exec($query);
-		$query = "INSERT INTO access_log (session_id, user_name, fname, lname, REMOTE_ADDR, HTTP_USER_AGENT, date_accessed) VALUES ('$session_id', '$user_name', '$fname', '$lname', '$REMOTE_ADDR', '$HTTP_USER_AGENT', '$date_accessed')";
-		$count = $db->exec($query);
-		$db->commit();
+        $db = $this->getDBHandle();
+        try {
+            $db->beginTransaction();
+            $query = "CREATE TABLE IF NOT EXISTS access_log ([id] integer PRIMARY KEY AUTOINCREMENT, [session_id] VARCHAR, [user_name] VARCHAR, [fname] VARCHAR, [lname] VARCHAR, [REMOTE_ADDR] VARCHAR, [HTTP_USER_AGENT] VARCHAR, [date_accessed] DATETIME DEFAULT CURRENT_DATE)";
+            $count = $db->exec($query);
+            $query = "INSERT INTO access_log (session_id, user_name, fname, lname, REMOTE_ADDR, HTTP_USER_AGENT, date_accessed) VALUES ('$session_id', '$user_name', '$fname', '$lname', '$REMOTE_ADDR', '$HTTP_USER_AGENT', '$date_accessed')";
+            $count = $db->exec($query);
+            $db->commit();
 
-	} catch (Exception $e) {
-		$db->rollBack();
-		//die("Грешка при изпълнение на заявка към базата данни: " . $e->getMessage());
-	}
-}
+        } catch (Exception $e) {
+            $db->rollBack();
+            //die("Грешка при изпълнение на заявка към базата данни: " . $e->getMessage());
+        }
+    }
 
-/**
-	* @desc Show log table
-	*/
-public function displayLog() {
-	$query = "SELECT * FROM access_log WHERE 1 ORDER BY date_accessed DESC";
-	$rows = $this->fnSelectRows($query);
-	return $rows;
-}
+    /**
+        * @desc Show log table
+        */
+    public function displayLog() {
+        $query = "SELECT * FROM access_log WHERE 1 ORDER BY date_accessed DESC";
+        $rows = $this->fnSelectRows($query);
+        return $rows;
+    }
 
-/**
-	* @desc Create daily DB backup and delete old backups
-	*/
-public function createDbBackup() {
-	$dbDir = 'db/';
-	$today = date('Y-m-d');
-	$before = date('Y-m-d', strtotime('-5 day'));
+    /**
+        * @desc Create daily DB backup and delete old backups
+        */
+    public function createDbBackup() {
+        $dbDir = 'db/';
+        $today = date('Y-m-d');
+        $before = date('Y-m-d', strtotime('-5 day'));
 
-	// Create a backup of the existing database
-	if(file_exists($dbDir.'stm.db') && !file_exists($dbDir.'BKP_'.$today.'_stm.db')) {
-		@copy($dbDir.'stm.db', $dbDir.'BKP_'.$today.'_stm.db');
-	}
-	// Delete backups older than 5 days
-	if ($handle = opendir($dbDir)) {
-		while (false !== ($file = readdir($handle))) {
-			if ($file != "." && $file != ".." && preg_match('/BKP_(\d{4}\-\d{2}\-\d{2})_stm\.db/', $file, $matches)) {
-				if($matches[1] < $before) {
-					@unlink($dbDir.$file);
-				}
-			}
-		}
-		closedir($handle);
-	}
-}
+        // Create a backup of the existing database
+        if(file_exists($dbDir.'stm.db') && !file_exists($dbDir.'BKP_'.$today.'_stm.db')) {
+            @copy($dbDir.'stm.db', $dbDir.'BKP_'.$today.'_stm.db');
+        }
+        // Delete backups older than 5 days
+        if ($handle = opendir($dbDir)) {
+            while (false !== ($file = readdir($handle))) {
+                if ($file != "." && $file != ".." && preg_match('/BKP_(\d{4}\-\d{2}\-\d{2})_stm\.db/', $file, $matches)) {
+                    if($matches[1] < $before) {
+                        @unlink($dbDir.$file);
+                    }
+                }
+            }
+            closedir($handle);
+        }
+    }
 
-public function isAjaxCall() {
-	return (isset($_POST['xajaxargs'][0]) || isset($_POST['xjxargs']) || ( isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 'XMLHttpRequest' == $_SERVER['HTTP_X_REQUESTED_WITH'] ));
-}
+    public function isAjaxCall() {
+        return (isset($_POST['xajaxargs'][0]) || isset($_POST['xjxargs']) || ( isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 'XMLHttpRequest' == $_SERVER['HTTP_X_REQUESTED_WITH'] ));
+    }
 
-public function debug_data_as_table($rows = array()) {
-	if(!is_array($rows)) return '';
-	if(!empty($rows)) {
-		echo '<table border="1">';
-		foreach ($rows as $row) {
-			echo '<tr>';
-			foreach ($row as $key => $value) {
-				if(!is_numeric($key)) echo '<th>'.$key.'&nbsp;</th>';
-			}
-			echo '</tr>';
-			break;
-		}
+    public function debug_data_as_table($rows = array()) {
+        if(!is_array($rows)) return '';
+        if(!empty($rows)) {
+            echo '<table border="1">';
+            foreach ($rows as $row) {
+                echo '<tr>';
+                foreach ($row as $key => $value) {
+                    if(!is_numeric($key)) echo '<th>'.$key.'&nbsp;</th>';
+                }
+                echo '</tr>';
+                break;
+            }
 
-		foreach ($rows as $row) {
-			echo '<tr>';
-			foreach ($row as $key => $value) {
-				if(!is_numeric($key)) echo '<td>'.$value.'&nbsp;</td>';
-			}
-			echo '</tr>';
-		}
-		echo '<table>';
-	}
-}
+            foreach ($rows as $row) {
+                echo '<tr>';
+                foreach ($row as $key => $value) {
+                    if(!is_numeric($key)) echo '<td>'.$value.'&nbsp;</td>';
+                }
+                echo '</tr>';
+            }
+            echo '<table>';
+        }
+    }
 
+    /**
+     * @param int $telkId
+     * @param array $accompanyingDiseases
+     * @return void
+     */
+    private function storeAccompanyingDiseases($telkId, $accompanyingDiseases)
+    {
+        $telkId = (int)$telkId;
+
+        $db = $this->getDBHandle();
+        $db->beginTransaction();
+
+        try {
+            $db->exec("DELETE FROM telk_accompanying_diseases WHERE telk_id = $telkId");
+
+            if (!empty($accompanyingDiseases)) {
+                foreach ($accompanyingDiseases as $i => $accompanyingDisease) {
+                    $mkbId = $this->checkStr(mb_strtoupper($accompanyingDisease['mkb_id'], 'utf-8'));
+                    $sql = "INSERT INTO telk_accompanying_diseases (telk_id, mkb_id, position) VALUES ($telkId, '$mkbId', $i)";
+                    $db->exec($sql);
+                }
+            }
+
+            $db->commit();
+        } catch (Exception $ex) {
+            $db->rollBack();
+        }
+    }
 }

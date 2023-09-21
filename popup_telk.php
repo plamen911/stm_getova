@@ -20,6 +20,7 @@ $f = $dbInst->getChartInfo($telk_id);
 
 // Xajax begin
 require('xajax/xajax_core/xajax.inc.php');
+
 function loadPatientTelks($worker_id)
 {
     $objResponse = new xajaxResponse();
@@ -82,6 +83,7 @@ function openTelk($telk_id)
         $objResponse->assign("mkb_desc_4", "innerHTML", $row['mkb_desc_4']);
         $objResponse->assign("percent_inv", "value", $row['percent_inv']);
         $objResponse->assign("bad_work_env", "value", $row['bad_work_env']);
+        $objResponse->call('addAccompanyingDiseases', $row['accompanying_diseases']);
 
         $w = $dbInst->getWorkerInfo($row['worker_id']);
         $objResponse->assign("wname", "value", ($w['fname'] . ' ' . $w['sname'] . ' ' . $w['lname']));
@@ -318,9 +320,86 @@ return $buff;
     <link rel="stylesheet" href="js/thickbox/thickbox.css" type="text/css" media="screen"/>
     <script type="text/javascript" charset="utf-8">
       //<![CDATA[
+      var $accompanyingDiseaseList
       $(document).ready(function () {
         stripTable()
+
+        $accompanyingDiseaseList = $('#accompanyingDiseaseList')
+
+        $('#addAccompanyingDiseaseBtn').on('click', function (e) {
+          e.preventDefault()
+          addAccompanyingDisease({})
+        })
       })
+
+      function clearDescriptionIfMkbEmpty (elem) {
+        if (elem.value === '') {
+          $(elem).closest('li').find('label').html('')
+        }
+      }
+
+      function addAccompanyingDiseases (accompanyingDiseases) {
+        if (accompanyingDiseases.length > 0) {
+          accompanyingDiseases.forEach(function (accompanyingDisease) {
+            addAccompanyingDisease({
+              mkb_id: accompanyingDisease.mkb_id,
+              mkb_desc: accompanyingDisease.mkb_desc,
+              mkb_code: accompanyingDisease.mkb_code
+            })
+          })
+        }
+      }
+
+      function addAccompanyingDisease (payload) {
+        var $mkbDesc = $('<label>').append(payload.mkb_desc || '')
+
+        $accompanyingDiseaseList.append(
+          $('<li>')
+            .append(
+              $('<input type="text" ' +
+                'name="accompanying_diseases[][mkb_id]" ' +
+                'value="' + (payload.mkb_id || '') + '" ' +
+                'onkeyup="clearDescriptionIfMkbEmpty(this)" ' +
+                'size="10" ' +
+                'maxlength="50">'
+              ).autocomplete('autocompleter.php', {
+                minChars: 1,
+                extraParams: {search: 'mkb'},
+                width: 600,
+                scroll: true,
+                scrollHeight: 250,
+                selectFirst: false,
+                formatItem: function (data, i, n, value) {
+                  var mkbId = data[0]
+                  var mkbDesc = data[1]
+                  var mkbCode = data[2]
+                  return '<table border="0" cellpadding="0" cellspacing="0">' +
+                    '<tr>' +
+                    '<td width="50">' + mkbId + '<\/td>' +
+                    '<td width="500">' + mkbDesc + '<\/td>' +
+                    '<td width="50">' + mkbCode + '<\/td>' +
+                    '<\/tr>' +
+                    '<\/table>'
+                }
+              }).result(function (event, data, formatted) {
+                if (data) {
+                  $mkbDesc.html(data[1])
+                }
+              })
+            )
+            .append($('<a href="#">')
+              .on('click', function (e) {
+                e.preventDefault()
+                if (confirm('Сигурни ли сте, че искате да изтриете това придружаващо заболяване?')) {
+                  $(this).closest('li').remove()
+                }
+              })
+              .append(' ')
+              .append('<img src="img/delete.gif" alt="delete" width="15" height="15" border="0">')
+            )
+            .append($mkbDesc)
+        )
+      }
 
       function stripTable () {
         // Strip table
@@ -352,6 +431,8 @@ return $buff;
         } catch (err) {
           alert(err.description)
         }
+
+        $accompanyingDiseaseList.empty()
       }
 
       function newTelk () {
@@ -428,6 +509,7 @@ return $buff;
             return egn
           }
         })
+
         $('#egn').result(function (event, data, formatted) {
           if (data) {
             $('#wname').val(data[1])
@@ -457,6 +539,7 @@ return $buff;
             return wname
           }
         })
+
         $('#wname').result(function (event, data, formatted) {
           if (data) {
             $('#wname').val(data[1])
@@ -491,6 +574,7 @@ return $buff;
             return '<table border=\'0\' cellpadding=\'0\' cellspacing=\'0\'><tr><td width=\'50\'>' + mkb_id + '<\/td><td width=\'500\'>' + mkb_desc + '<\/td><td width=\'50\'>' + mkb_code + '<\/td><\/tr><\/table>'
           }
         })
+
         $('input[name^=\'mkb_id_\']').result(function (event, data, formatted) {
           if (data) {
             var id = this.name.slice(7)
@@ -616,58 +700,102 @@ return $buff;
                                 />
                                 г. <em>(при настъпила смърт)</em>
                                 <div class="hr"></div>
-                                <input type="text"
-                                       id="mkb_id_1"
-                                       name="mkb_id_1"
-                                       value="<?= ((isset($f['mkb_id_1'])) ? HTMLFormat($f['mkb_id_1']) : '') ?>"
-                                       onkeyup="if (this.value == '') { $('#mkb_desc_1').html(''); $('#mkb_code_1').html(''); }"
-                                       size="10"
-                                       maxlength="50"
-                                />
-                                МКБ водеща диагноза
-                                &nbsp;&nbsp;<span class="primary">
-                                    <strong id="mkb_code_1"><?= ((isset($f['mkb_code_1'])) ? HTMLFormat($f['mkb_code_1']) : '') ?></strong>
-                                </span>
-                                <label id="mkb_desc_1"><?= ((isset($f['mkb_desc_1'])) ? HTMLFormat($f['mkb_desc_1']) : '') ?></label>
-                                <input type="text"
-                                       id="mkb_id_2"
-                                       name="mkb_id_2"
-                                       value="<?= ((isset($f['mkb_id_2'])) ? HTMLFormat($f['mkb_id_2']) : '') ?>"
-                                       onkeyup="if (this.value == '') { $('#mkb_desc_2').html(''); $('#mkb_code_2').html(''); }"
-                                       size="10"
-                                       maxlength="50"
-                                />
-                                МКБ общо заболяване
-                                &nbsp;&nbsp;<span class="primary">
-                                    <strong id="mkb_code_2"><?= ((isset($f['mkb_code_2'])) ? HTMLFormat($f['mkb_code_2']) : '') ?></strong>
-                                </span>
-                                <label id="mkb_desc_2"><?= ((isset($f['mkb_desc_2'])) ? HTMLFormat($f['mkb_desc_2']) : '') ?></label>
-                                <input type="text"
-                                       id="mkb_id_3"
-                                       name="mkb_id_3"
-                                       value="<?= ((isset($f['mkb_id_3'])) ? HTMLFormat($f['mkb_id_3']) : '') ?>"
-                                       onkeyup="if (this.value == '') { $('#mkb_desc_3').html(''); $('#mkb_code_3').html(''); }"
-                                       size="10"
-                                       maxlength="50"
-                                />
-                                МКБ трудова злополука
-                                &nbsp;&nbsp;<span class="primary">
-                                    <strong id="mkb_code_3"><?= ((isset($f['mkb_code_3'])) ? HTMLFormat($f['mkb_code_3']) : '') ?></strong>
-                                </span>
-                                <label id="mkb_desc_3"><?= ((isset($f['mkb_desc_3'])) ? HTMLFormat($f['mkb_desc_3']) : '') ?></label>
-                                <input type="text"
-                                       id="mkb_id_4"
-                                       name="mkb_id_4"
-                                       value="<?= ((isset($f['mkb_id_4'])) ? HTMLFormat($f['mkb_id_4']) : '') ?>"
-                                       onkeyup="if (this.value == '') { $('#mkb_desc_4').html(''); $('#mkb_code_4').html(''); }"
-                                       size="10"
-                                       maxlength="50"
-                                />
-                                МКБ професионално заболяване
-                                &nbsp;&nbsp;<span class="primary">
-                                    <strong id="mkb_code_4"><?= ((isset($f['mkb_code_4'])) ? HTMLFormat($f['mkb_code_4']) : '') ?></strong>
-                                </span>
-                                <label id="mkb_desc_4"><?= ((isset($f['mkb_desc_4'])) ? HTMLFormat($f['mkb_desc_4']) : '') ?></label>
+                                <ul>
+                                    <li>
+                                        <input type="text"
+                                               id="mkb_id_1"
+                                               name="mkb_id_1"
+                                               value="<?= ((isset($f['mkb_id_1'])) ? HTMLFormat($f['mkb_id_1']) : '') ?>"
+                                               onkeyup="if (this.value == '') { $('#mkb_desc_1').html(''); $('#mkb_code_1').html(''); }"
+                                               size="10"
+                                               maxlength="50"
+                                        />
+                                        МКБ водеща диагноза
+                                        &nbsp;&nbsp;<span class="primary">
+                                            <strong id="mkb_code_1">
+                                                <?= ((isset($f['mkb_code_1'])) ? HTMLFormat($f['mkb_code_1']) : '') ?>
+                                            </strong>
+                                        </span>
+                                        <label id="mkb_desc_1">
+                                            <?= ((isset($f['mkb_desc_1'])) ? HTMLFormat($f['mkb_desc_1']) : '') ?>
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <input type="text"
+                                               id="mkb_id_2"
+                                               name="mkb_id_2"
+                                               value="<?= ((isset($f['mkb_id_2'])) ? HTMLFormat($f['mkb_id_2']) : '') ?>"
+                                               onkeyup="if (this.value == '') { $('#mkb_desc_2').html(''); $('#mkb_code_2').html(''); }"
+                                               size="10"
+                                               maxlength="50"
+                                        />
+                                        МКБ общо заболяване
+                                        &nbsp;&nbsp;<span class="primary">
+                                            <strong id="mkb_code_2">
+                                                <?= ((isset($f['mkb_code_2'])) ? HTMLFormat($f['mkb_code_2']) : '') ?>
+                                            </strong>
+                                        </span>
+                                        <label id="mkb_desc_2">
+                                            <?= ((isset($f['mkb_desc_2'])) ? HTMLFormat($f['mkb_desc_2']) : '') ?>
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <input type="text"
+                                               id="mkb_id_3"
+                                               name="mkb_id_3"
+                                               value="<?= ((isset($f['mkb_id_3'])) ? HTMLFormat($f['mkb_id_3']) : '') ?>"
+                                               onkeyup="if (this.value == '') { $('#mkb_desc_3').html(''); $('#mkb_code_3').html(''); }"
+                                               size="10"
+                                               maxlength="50"
+                                        />
+                                        МКБ трудова злополука
+                                        &nbsp;&nbsp;<span class="primary">
+                                            <strong id="mkb_code_3">
+                                                <?= ((isset($f['mkb_code_3'])) ? HTMLFormat($f['mkb_code_3']) : '') ?>
+                                            </strong>
+                                        </span>
+                                        <label id="mkb_desc_3">
+                                            <?= ((isset($f['mkb_desc_3'])) ? HTMLFormat($f['mkb_desc_3']) : '') ?>
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <input type="text"
+                                               id="mkb_id_4"
+                                               name="mkb_id_4"
+                                               value="<?= ((isset($f['mkb_id_4'])) ? HTMLFormat($f['mkb_id_4']) : '') ?>"
+                                               onkeyup="if (this.value == '') { $('#mkb_desc_4').html(''); $('#mkb_code_4').html(''); }"
+                                               size="10"
+                                               maxlength="50"
+                                        />
+                                        МКБ професионално заболяване
+                                        &nbsp;&nbsp;<span class="primary">
+                                            <strong id="mkb_code_4">
+                                                <?= ((isset($f['mkb_code_4'])) ? HTMLFormat($f['mkb_code_4']) : '') ?>
+                                            </strong>
+                                        </span>
+                                        <label id="mkb_desc_4">
+                                            <?= ((isset($f['mkb_desc_4'])) ? HTMLFormat($f['mkb_desc_4']) : '') ?>
+                                        </label>
+                                    </li>
+                                </ul>
+                                <div class="hr"></div>
+
+                                <div>
+                                    <div style="margin: 6px 0">
+                                        Придружаващи заболявания
+                                        <a href="#" id="addAccompanyingDiseaseBtn">
+                                            <img src="img/plus.gif"
+                                                 width="12"
+                                                 height="12"
+                                                 border="0"
+                                                 alt="plus"
+                                                 title="Добави"
+                                            />
+                                        </a>
+                                    </div>
+                                    <ul id="accompanyingDiseaseList"></ul>
+                                </div>
+
                                 <div class="hr"></div>
                                 Противопоказни усл. на труд:
                                 <input type="text"
