@@ -569,7 +569,7 @@ class SqliteDB
 	public function getStmInfo($stm_id = 1)
 	{
 		$stm_id = (3 == $_SESSION['sess_user_id']) ? 2 : 1;
-		
+
 		$db = $this->getDBHandle();
 		$query = "SELECT * FROM stm_info WHERE stm_id='" . intval($stm_id) . "'";
 		try {
@@ -835,6 +835,7 @@ class SqliteDB
 					strftime('%d.%m.%Y', t.telk_date_from, 'localtime') AS telk_date_from2,
 					strftime('%d.%m.%Y', t.telk_date_to, 'localtime') AS telk_date_to2,
 					strftime('%d.%m.%Y', t.first_inv_date, 'localtime') AS first_inv_date2,
+					strftime('%d.%m.%Y', t.date_of_death, 'localtime') AS date_of_death2,
 					m.mkb_id AS `m.mkb_id`, m.mkb_id AS `mkb_id`,
 					m.mkb_desc AS `m.mkb_desc`, m.mkb_desc AS `mkb_desc`,  
 					m.mkb_code AS `m.mkb_code`, m.mkb_code AS `mkb_code`
@@ -1078,7 +1079,7 @@ class SqliteDB
 					AND ( date_retired = '' OR (julianday(date_retired) >= julianday('$date_to')) )
 					AND ( (julianday(date_curr_position_start) <= julianday('$date_from'))
 					OR date_curr_position_start = '')
-					AND (sex='М' OR sex='')";		
+					AND (sex='М' OR sex='')";
 		$row = $this->fnSelectSingleRow($query);
 		$r['anual_men'] = (!empty($row['cnt'])) ? floatval($row['cnt']) : 0;
 
@@ -1583,6 +1584,7 @@ class SqliteDB
 					strftime('%d.%m.%Y', t.telk_date_from, 'localtime') AS telk_date_from2,
 					strftime('%d.%m.%Y', t.telk_date_to, 'localtime') AS telk_date_to2,
 					strftime('%d.%m.%Y', t.first_inv_date, 'localtime') AS first_inv_date2,
+					strftime('%d.%m.%Y', t.date_of_death, 'localtime') AS date_of_death2,
 					(SELECT mkb_desc FROM mkb m WHERE m.mkb_id = t.mkb_id_1) AS mkb_desc_1,
 					(SELECT mkb_code FROM mkb m WHERE m.mkb_id = t.mkb_id_1) AS mkb_code_1,
 					(SELECT mkb_desc FROM mkb m WHERE m.mkb_id = t.mkb_id_2) AS mkb_desc_2,
@@ -2184,11 +2186,11 @@ class SqliteDB
 				'prchk_surgeon', 'prchk_surgeon_doc' => 'prchk_surgeon_doc', 'prchk_GP' =>
 				'prchk_GP', 'prchk_GP_doc' => 'prchk_GP_doc', 'prchk_dentist' => 'prchk_dentist',
 				'prchk_dentist_doc' => 'prchk_dentist_doc',
-				'prchk_cardiologist' => 'prchk_cardiologist', 'prchk_cardiologist_doc' => 'prchk_cardiologist_doc', 
-				'prchk_therapeutist' => 'prchk_therapeutist', 'prchk_therapeutist_doc' => 'prchk_therapeutist_doc', 
-				'prchk_psychiatrist' => 'prchk_psychiatrist', 'prchk_psychiatrist_doc' => 'prchk_psychiatrist_doc', 
-				'prchk_radiobiologist' => 'prchk_radiobiologist', 'prchk_radiobiologist_doc' => 'prchk_radiobiologist_doc', 
-				'prchk_doctor_tm' => 'prchk_doctor_tm', 'prchk_doctor_tm_doc' => 'prchk_doctor_tm_doc', 
+				'prchk_cardiologist' => 'prchk_cardiologist', 'prchk_cardiologist_doc' => 'prchk_cardiologist_doc',
+				'prchk_therapeutist' => 'prchk_therapeutist', 'prchk_therapeutist_doc' => 'prchk_therapeutist_doc',
+				'prchk_psychiatrist' => 'prchk_psychiatrist', 'prchk_psychiatrist_doc' => 'prchk_psychiatrist_doc',
+				'prchk_radiobiologist' => 'prchk_radiobiologist', 'prchk_radiobiologist_doc' => 'prchk_radiobiologist_doc',
+				'prchk_doctor_tm' => 'prchk_doctor_tm', 'prchk_doctor_tm_doc' => 'prchk_doctor_tm_doc',
 				'prchk_assisant_tm' => 'prchk_assisant_tm', 'prchk_assisant_tm_doc' => 'prchk_assisant_tm_doc');
 				while (list($var, $param) = @each($var_list)) {
 					if (isset($row[$param]))
@@ -2235,13 +2237,13 @@ class SqliteDB
 					'prchk_UNG_doc' => 'prchk_UNG_doc', 'prchk_neurologist' => 'prchk_neurologist',
 					'prchk_neurologist_doc' => 'prchk_neurologist_doc', 'prchk_surgeon' =>
 					'prchk_surgeon', 'prchk_surgeon_doc' => 'prchk_surgeon_doc', 'prchk_GP' =>
-					'prchk_GP', 'prchk_GP_doc' => 'prchk_GP_doc', 
+					'prchk_GP', 'prchk_GP_doc' => 'prchk_GP_doc',
 					'prchk_dentist' => 'prchk_dentist', 'prchk_dentist_doc' => 'prchk_dentist_doc',
-					'prchk_cardiologist' => 'prchk_cardiologist', 'prchk_cardiologist_doc' => 'prchk_cardiologist_doc', 
-					'prchk_therapeutist' => 'prchk_therapeutist', 'prchk_therapeutist_doc' => 'prchk_therapeutist_doc', 
-					'prchk_psychiatrist' => 'prchk_psychiatrist', 'prchk_psychiatrist_doc' => 'prchk_psychiatrist_doc', 
-					'prchk_radiobiologist' => 'prchk_radiobiologist', 'prchk_radiobiologist_doc' => 'prchk_radiobiologist_doc', 
-					'prchk_doctor_tm' => 'prchk_doctor_tm', 'prchk_doctor_tm_doc' => 'prchk_doctor_tm_doc', 
+					'prchk_cardiologist' => 'prchk_cardiologist', 'prchk_cardiologist_doc' => 'prchk_cardiologist_doc',
+					'prchk_therapeutist' => 'prchk_therapeutist', 'prchk_therapeutist_doc' => 'prchk_therapeutist_doc',
+					'prchk_psychiatrist' => 'prchk_psychiatrist', 'prchk_psychiatrist_doc' => 'prchk_psychiatrist_doc',
+					'prchk_radiobiologist' => 'prchk_radiobiologist', 'prchk_radiobiologist_doc' => 'prchk_radiobiologist_doc',
+					'prchk_doctor_tm' => 'prchk_doctor_tm', 'prchk_doctor_tm_doc' => 'prchk_doctor_tm_doc',
 					'prchk_assisant_tm' => 'prchk_assisant_tm', 'prchk_assisant_tm_doc' => 'prchk_assisant_tm_doc');
 					while (list($var, $param) = @each($var_list)) {
 						if (isset($aFormValues[$param]))
@@ -2470,7 +2472,7 @@ class SqliteDB
      */
 	public function processStmInfo($aFormValues)
 	{
-		$stm_id = (3 == $_SESSION['sess_user_id']) ? 2 : 1;		
+		$stm_id = (3 == $_SESSION['sess_user_id']) ? 2 : 1;
 		$db = $this->getDBHandle();
 		try {
 			$var_list = array('stm_name' => 'stm_name', 'license_num' => 'license_num',
@@ -2557,7 +2559,7 @@ class SqliteDB
 			'worker_id', 'telk_num' => 'telk_num', 'telk_date_from' => 'telk_date_from',
 			'telk_date_to' => 'telk_date_to', 'first_inv_date' => 'first_inv_date', 'telk_duration' => 'telk_duration', 'mkb_id_1' =>
 			'mkb_id_1', 'mkb_id_2' => 'mkb_id_2', 'mkb_id_3' => 'mkb_id_3', 'mkb_id_4' =>
-			'mkb_id_4', 'percent_inv' => 'percent_inv', 'bad_work_env' => 'bad_work_env');
+			'mkb_id_4', 'percent_inv' => 'percent_inv', 'bad_work_env' => 'bad_work_env', 'date_of_death' => 'date_of_death');
 			while (list($var, $param) = @each($var_list)) {
 				if (isset($aFormValues[$param]))
 				$$var = $this->checkStr($aFormValues[$param]);
@@ -2570,27 +2572,36 @@ class SqliteDB
 			$mkb_id_3 = mb_strtoupper($mkb_id_3, 'utf-8');
 			$mkb_id_4 = mb_strtoupper($mkb_id_4, 'utf-8');
 			$d = new ParseBGDate();
-			if ($d->Parse($telk_date_from))
-			$telk_date_from = $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00';
-			else
-			$telk_date_from = '';
-			if ($d->Parse($telk_date_to))
-			$telk_date_to = $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00';
-			else
-			$telk_date_to = '';
-			if ($d->Parse($first_inv_date))
-			$first_inv_date = $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00';
-			else
-			$first_inv_date = '';
+
+            $telk_date_from = $d->Parse($telk_date_from)
+                ? $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00' : '';
+            $telk_date_to = $d->Parse($telk_date_to)
+                ? $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00' : '';
+            $first_inv_date = $d->Parse($first_inv_date)
+                ? $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00' : '';
+            $date_of_death = $d->Parse($date_of_death)
+                ? $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00' : '';
 
 			if ($telk_id) { // Update patient's telk
-				$query = "UPDATE telks SET telk_num='$telk_num', telk_date_from='$telk_date_from', telk_date_to='$telk_date_to', first_inv_date='$first_inv_date', telk_duration='$telk_duration', mkb_id_1='$mkb_id_1', mkb_id_2='$mkb_id_2', mkb_id_3='$mkb_id_3', mkb_id_4='$mkb_id_4', percent_inv='" .
-				floatval($percent_inv) . "', bad_work_env='$bad_work_env', date_modified=datetime('now','localtime') WHERE telk_id='$telk_id'";
+				$query = "UPDATE telks SET telk_num='$telk_num',
+                 telk_date_from='$telk_date_from',
+                 telk_date_to='$telk_date_to',
+                 first_inv_date='$first_inv_date',
+                 telk_duration='$telk_duration',
+                 mkb_id_1='$mkb_id_1',
+                 mkb_id_2='$mkb_id_2',
+                 mkb_id_3='$mkb_id_3',
+                 mkb_id_4='$mkb_id_4',
+                 percent_inv='" . floatval($percent_inv) . "',
+				bad_work_env='$bad_work_env',
+				date_modified=datetime('now','localtime'),
+				date_of_death='$date_of_death'
+				WHERE telk_id='$telk_id'";
 				$count = $db->exec($query); //returns affected rows
 			} else { // Insert a patient's telk
-				$query = "INSERT INTO telks (firm_id, worker_id, telk_num, telk_date_from, telk_date_to, first_inv_date, telk_duration, mkb_id_1, mkb_id_2, mkb_id_3, mkb_id_4, percent_inv, bad_work_env, date_added, date_modified) VALUES ('" .
+				$query = "INSERT INTO telks (firm_id, worker_id, telk_num, telk_date_from, telk_date_to, first_inv_date, telk_duration, mkb_id_1, mkb_id_2, mkb_id_3, mkb_id_4, percent_inv, bad_work_env, date_added, date_modified, date_of_death) VALUES ('" .
 				intval($firm_id) . "', '" . intval($worker_id) . "', '$telk_num', '$telk_date_from', '$telk_date_to', '$first_inv_date', '$telk_duration', '$mkb_id_1', '$mkb_id_2', '$mkb_id_3', '$mkb_id_4', '" .
-				floatval($percent_inv) . "', '$bad_work_env',datetime('now','localtime'), datetime('now','localtime'))";
+				floatval($percent_inv) . "', '$bad_work_env',datetime('now','localtime'), datetime('now','localtime'), '$date_of_death')";
 				$count = $db->exec($query); //returns affected rows
 				$telk_id = $db->lastInsertId();
 			}
@@ -3824,9 +3835,9 @@ class SqliteDB
 		$d = new ParseBGDate();
 		if ($d->Parse($hospital_date_to)) $hospital_date_to = $d->year . '-' . $d->month . '-' . $d->day . ' 00:00:00';
 		else return 1;
-		
+
 		$hospital_date_to = date('Y-m-d H:i:s', (strtotime($hospital_date_to) - 60*60*24*1));
-		
+
 		$query = "	SELECT COUNT(*) AS cnt
 					FROM patient_charts
 					WHERE worker_id = " . intval($worker_id) . "
@@ -4096,7 +4107,7 @@ class SqliteDB
 		$firm_id = intval($firm_id);
 		$ts_date_from = strtotime($date_from);
 		$ts_date_to = strtotime($date_to);
-		
+
 		$sql = "SELECT t.* , date_retired , date_curr_position_start
 				FROM patient_charts t
 				LEFT JOIN workers w ON ( w.worker_id = t.worker_id )
@@ -4220,7 +4231,7 @@ class SqliteDB
 
 	// Брой на работещите с 4 и повече случаи с временна неработоспособност (първични болнични листове)
 	public function getSickWorkers4Up($firm_id = 0, $date_from = '2007-01-01 00:00:00', $date_to = '2007-12-31 00:00:00') {
-		$firm_id = intval($firm_id);		
+		$firm_id = intval($firm_id);
 		$cnt = 0;
 		$rows = $this->getWorkersByCharts3($firm_id, $date_from, $date_to);
 		if(!empty($rows)) {
@@ -4233,7 +4244,7 @@ class SqliteDB
 
 	// Брой на работещите с 30 и повече дни временна неработоспособност от заболявания
 	public function getSickWorkers30Up($firm_id = 0, $date_from = '2007-01-01 00:00:00', $date_to = '2007-12-31 00:00:00') {
-		$firm_id = intval($firm_id);		
+		$firm_id = intval($firm_id);
 		$cnt = 0;
 		$rows = $this->getWorkersByCharts3($firm_id, $date_from, $date_to);
 		if(!empty($rows)) {
@@ -4358,7 +4369,7 @@ class SqliteDB
 					( (t.telk_date_to = '' OR t.telk_date_to IS NULL) OR julianday(t.telk_date_to) >= julianday('$date_from') )
 				)
 				GROUP BY t.worker_id";
-		/*$sql .= " AND 
+		/*$sql .= " AND
 				(
 					(julianday(t.telk_date_from) >= julianday('$date_from') AND julianday(t.telk_date_from) <= julianday('$date_to'))
 					OR (julianday(t.telk_date_to) <= julianday('$date_to') AND julianday(t.telk_date_to) >= julianday('$date_from'))
@@ -4402,7 +4413,7 @@ class SqliteDB
 				AND (
 					t.checkup_date >= '$date_from' AND t.checkup_date <= '$date_to'
 				)
-				GROUP BY t.worker_id";			
+				GROUP BY t.worker_id";
 		$rows = $this->query($sql);
 		if(!empty($rows)) {
 			foreach ($rows as $row) {
@@ -4678,17 +4689,17 @@ class SqliteDB
 		}
 		$data = array();
 		if(!empty($aTelksByPosition)) {
-			foreach ($aTelksByPosition as $position_id => $row) { 
+			foreach ($aTelksByPosition as $position_id => $row) {
 		  		$fld['position_name'] = (isset($row[0]['position_name'])) ? $row[0]['position_name'] : '--';
 			  	$fld['cnt1'] = (isset($aTelksByPosition[$position_id])) ? count($aTelksByPosition[$position_id]) : 0;
 			  	$fld['cnt2'] = (isset($aProDiseases[$position_id])) ? count($aProDiseases[$position_id]) : 0;
-			  	$fld['cnt3'] = (isset($aWorkAccidents[$position_id])) ? count($aWorkAccidents[$position_id]) : 0;		  	
+			  	$fld['cnt3'] = (isset($aWorkAccidents[$position_id])) ? count($aWorkAccidents[$position_id]) : 0;
 			  	$data[] = $fld;
 			}
 		}
 		return $data;
 	}
-	
+
 	public function getTelkListDetails_Lalova($firm_id = 0, $date_from = '2007-01-01 00:00:00', $date_to = '2007-12-31 00:00:00') {
 		$firm_id = intval($firm_id);
 		$data = array();
@@ -4736,7 +4747,7 @@ class SqliteDB
 				$rows[] = $r;
 			}
 		}
-		
+
 		if(!empty($rows)) {
 			foreach ($rows as $row) {
 				// Заболяемост с трайна неработоспособност
@@ -4750,8 +4761,8 @@ class SqliteDB
 						AND ( w.date_curr_position_start = '' OR julianday(w.date_curr_position_start) <= julianday('$date_to') )
 						AND t.percent_inv >= 50
 						AND w.map_id = ".$row['m.map_id']."
-						AND ( 
-							( julianday(t.telk_date_from) <= julianday('$date_to') ) AND 
+						AND (
+							( julianday(t.telk_date_from) <= julianday('$date_to') ) AND
 							( (t.telk_date_to = '' OR t.telk_date_to IS NULL) OR julianday(t.telk_date_to) >= julianday('$date_from') )
 						)
 						GROUP BY m.wplace_id";*/
@@ -5227,7 +5238,7 @@ return array('table' => $retStr, 'total' => $total);
 				" . (($condition != '') ? ' AND ' . $condition : '') . "
 				GROUP BY d.mkb_id
 				ORDER BY cl.class_id, g.group_id, cnt DESC, m.mkb_id";
-		
+
 		$rows = $this->fnSelectRows($sql);
 		if ($rows) {
 			$class_id = -1;
@@ -5541,7 +5552,7 @@ public function debug_data_as_table($rows = array()) {
 			echo '</tr>';
 			break;
 		}
-		
+
 		foreach ($rows as $row) {
 			echo '<tr>';
 			foreach ($row as $key => $value) {
