@@ -3,6 +3,8 @@
 
 require('includes.php');
 
+ini_set('memory_limit', '256M');
+
 $offline = (isset($_GET['offline']) && $_GET['offline'] == '1') ? 1 : 0;
 
 $worker_id = (isset($_GET['worker_id']) && is_numeric($_GET['worker_id'])) ? intval($_GET['worker_id']) : 0;
